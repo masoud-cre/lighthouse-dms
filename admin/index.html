@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lighthouse DMS — Login</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); width: 100%; max-width: 400px; }
+    .logo { font-size: 20px; font-weight: 700; color: #111; margin-bottom: 8px; }
+    .subtitle { font-size: 14px; color: #666; margin-bottom: 32px; }
+    label { display: block; font-size: 13px; font-weight: 500; color: #444; margin-bottom: 6px; }
+    input { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 16px; outline: none; transition: border-color 0.2s; }
+    input:focus { border-color: #111; }
+    button { width: 100%; padding: 12px; background: #111; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    button:hover { background: #333; }
+    button:disabled { background: #999; cursor: not-allowed; }
+    .error { color: #dc2626; font-size: 13px; margin-top: 12px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">Lighthouse DMS</div>
+    <div class="subtitle">Document Management System</div>
+    <label>Email</label>
+    <input id="email" type="email" placeholder="you@cresta.ai" />
+    <label>Password</label>
+    <input id="password" type="password" placeholder="••••••••" />
+    <button id="login-btn">Sign In</button>
+    <div class="error" id="error-msg"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://yuwvruokfrbizjiyobrx.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1d3ZydW9rZnJiaXpqaXlvYnJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MjEzNTYsImV4cCI6MjA5NTk5NzM1Nn0.gLH11eXQVoxfdHovVMuWgG9ydYxPPu3bI2Ony2MmUsc";
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = "../dashboard/";
+    });
+
+    document.getElementById("login-btn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const errEl = document.getElementById("error-msg");
+      const btn = document.getElementById("login-btn");
+      errEl.style.display = "none";
+      btn.disabled = true;
+      btn.textContent = "Signing in...";
+
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) {
+        errEl.textContent = error.message;
+        errEl.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = "Sign In";
+      } else {
+        window.location.href = "../dashboard/";
+      }
+    });
+
+    document.getElementById("password").addEventListener("keydown", e => {
+      if (e.key === "Enter") document.getElementById("login-btn").click();
+    });
+  </script>
+</body>
+</html>

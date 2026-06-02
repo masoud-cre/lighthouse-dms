@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lighthouse DMS — Document Access</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: white; border-bottom: 1px solid #eee; padding: 16px 32px; }
+    .logo { font-size: 18px; font-weight: 700; color: #111; }
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px; }
+    .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); width: 100%; max-width: 440px; }
+    h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .doc-desc { font-size: 14px; color: #666; margin-bottom: 24px; }
+    label { display: block; font-size: 13px; font-weight: 500; color: #444; margin-bottom: 6px; }
+    input[type="password"] { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 16px; transition: border-color 0.2s; }
+    input[type="password"]:focus { border-color: #111; }
+    .btn-primary { width: 100%; padding: 12px; background: #111; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-primary:hover { background: #333; }
+    .btn-primary:disabled { background: #999; cursor: not-allowed; }
+    .error { color: #dc2626; font-size: 13px; margin-top: 12px; display: none; }
+    #viewer { display: none; }
+    .viewer-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .download-btn { padding: 8px 18px; background: #111; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .download-btn:hover { background: #333; }
+    iframe { width: 100%; height: 70vh; border: none; border-radius: 8px; box-shadow: 0 1px 8px rgba(0,0,0,0.08); }
+    img.preview { max-width: 100%; border-radius: 8px; }
+    video.preview { width: 100%; border-radius: 8px; }
+    .expire-note { font-size: 12px; color: #999; margin-top: 10px; }
+    .not-found { text-align: center; color: #888; }
+  </style>
+</head>
+<body>
+  <header><div class="logo">Lighthouse DMS</div></header>
+  <main>
+
+    <!-- Gate -->
+    <div class="card" id="gate">
+      <h2 id="gate-title">Access Document</h2>
+      <p class="doc-desc">Enter the password provided by your Cresta contact.</p>
+      <label>Password</label>
+      <input type="password" id="pw-input" placeholder="••••••••" />
+      <button class="btn-primary" id="pw-btn">Access Document</button>
+      <div class="error" id="pw-error"></div>
+    </div>
+
+    <!-- Viewer -->
+    <div id="viewer" style="width:100%;max-width:900px;">
+      <div class="viewer-header">
+        <div>
+          <h2 id="doc-title"></h2>
+          <p class="doc-desc" id="doc-desc"></p>
+        </div>
+        <button class="download-btn" id="download-btn">Download</button>
+      </div>
+      <div id="view-area"></div>
+      <p class="expire-note">Access link expires in 15 minutes. Refresh and re-enter your password to renew.</p>
+    </div>
+
+  </main>
+
+  <script>
+    const SUPABASE_URL = "https://yuwvruokfrbizjiyobrx.supabase.co";
+    const slug = new URLSearchParams(window.location.search).get("slug");
+    let signedUrl = null;
+    let documentId = null;
+
+    if (!slug) {
+      document.getElementById("gate").innerHTML = '<div class="not-found"><h2>No document specified</h2><p>Check your link and try again.</p></div>';
+    }
+
+    document.getElementById("pw-btn").addEventListener("click", async () => {
+      const password = document.getElementById("pw-input").value;
+      const errEl = document.getElementById("pw-error");
+      const btn = document.getElementById("pw-btn");
+      errEl.style.display = "none";
+      btn.disabled = true;
+      btn.textContent = "Verifying...";
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/verify-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug, password }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errEl.textContent = data.error || "Incorrect password.";
+          errEl.style.display = "block";
+          btn.disabled = false;
+          btn.textContent = "Access Document";
+          return;
+        }
+
+        signedUrl = data.signed_url;
+        documentId = data.document_id;
+        document.getElementById("doc-title").textContent = data.name;
+        document.getElementById("doc-desc").textContent = data.description || "";
+        document.getElementById("gate").style.display = "none";
+        document.getElementById("viewer").style.display = "block";
+
+        const viewArea = document.getElementById("view-area");
+        const url = signedUrl;
+        if (url.match(/\.pdf|pdf/i)) {
+          viewArea.innerHTML = `<iframe src="${url}"></iframe>`;
+        } else if (url.match(/\.(jpg|jpeg|png)/i)) {
+          viewArea.innerHTML = `<img class="preview" src="${url}" />`;
+        } else if (url.match(/\.mp4/i)) {
+          viewArea.innerHTML = `<video class="preview" src="${url}" controls></video>`;
+        } else {
+          viewArea.innerHTML = `<p style="color:#666;padding:20px 0">Preview not available for this file type. Use the Download button.</p>`;
+        }
+      } catch (err) {
+        errEl.textContent = "Something went wrong. Please try again.";
+        errEl.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = "Access Document";
+      }
+    });
+
+    document.getElementById("download-btn").addEventListener("click", async () => {
+      if (!signedUrl) return;
+      if (documentId) {
+        fetch(`${SUPABASE_URL}/functions/v1/log-access`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ document_id: documentId, action: "download" }),
+        });
+      }
+      const a = document.createElement("a");
+      a.href = signedUrl;
+      a.download = "";
+      a.click();
+    });
+
+    document.getElementById("pw-input").addEventListener("keydown", e => {
+      if (e.key === "Enter") document.getElementById("pw-btn").click();
+    });
+  </script>
+</body>
+</html>

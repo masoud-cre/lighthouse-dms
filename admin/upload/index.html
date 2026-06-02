@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lighthouse DMS — Upload</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; }
+    header { background: white; border-bottom: 1px solid #eee; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 18px; font-weight: 700; color: #111; }
+    .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; }
+    .btn-ghost { background: transparent; color: #666; border: 1px solid #ddd; }
+    main { max-width: 600px; margin: 40px auto; padding: 0 32px; }
+    .card { background: white; padding: 36px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); }
+    h2 { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+    label { display: block; font-size: 13px; font-weight: 500; color: #444; margin-bottom: 6px; margin-top: 16px; }
+    input, textarea { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; transition: border-color 0.2s; }
+    input:focus, textarea:focus { border-color: #111; }
+    textarea { resize: vertical; }
+    .file-hint { font-size: 12px; color: #888; margin-top: 4px; }
+    .btn-primary { background: #111; color: white; padding: 12px; width: 100%; font-size: 14px; margin-top: 24px; border-radius: 8px; }
+    .btn-primary:hover { background: #333; }
+    .btn-primary:disabled { background: #999; cursor: not-allowed; }
+    .error { color: #dc2626; font-size: 13px; margin-top: 12px; display: none; }
+    .result { display: none; margin-top: 24px; padding: 20px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; }
+    .result strong { display: block; margin-bottom: 8px; color: #15803d; }
+    .result-link-row { display: flex; gap: 8px; margin-top: 8px; }
+    .result-link-row input { flex: 1; background: white; }
+    .copy-btn { padding: 10px 16px; background: #111; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .hint { font-size: 12px; color: #555; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Lighthouse DMS</div>
+    <a href="../dashboard/" class="btn btn-ghost">← Dashboard</a>
+  </header>
+  <main>
+    <div class="card">
+      <h2>Upload Document</h2>
+      <form id="upload-form">
+        <label>Document Name *</label>
+        <input id="name" type="text" placeholder="e.g. Q2 Case Study — Acme Corp" required />
+
+        <label>Description</label>
+        <textarea id="desc" rows="3" placeholder="Brief description shown to the recipient"></textarea>
+
+        <label>File * <span class="file-hint">PDF, PPTX, DOCX, MP4, JPG, PNG — max 50MB</span></label>
+        <input id="file" type="file" accept=".pdf,.ppt,.pptx,.doc,.docx,.mp4,.jpg,.jpeg,.png" required />
+
+        <label>Recipient Password *</label>
+        <input id="recipient-pw" type="text" placeholder="Password you'll share with the recipient" required />
+
+        <button type="submit" id="upload-btn" class="btn btn-primary">Upload & Generate Link</button>
+        <div class="error" id="error-msg"></div>
+      </form>
+
+      <div class="result" id="result">
+        <strong>Document uploaded successfully!</strong>
+        <p>Send this link and the password to your recipient:</p>
+        <div class="result-link-row">
+          <input id="result-link" type="text" readonly />
+          <button class="copy-btn" id="copy-btn">Copy</button>
+        </div>
+        <p class="hint">The recipient will need the password you set above to access the document.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL = "https://yuwvruokfrbizjiyobrx.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1d3ZydW9rZnJiaXpqaXlvYnJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MjEzNTYsImV4cCI6MjA5NTk5NzM1Nn0.gLH11eXQVoxfdHovVMuWgG9ydYxPPu3bI2Ony2MmUsc";
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const BASE_URL = window.location.origin + window.location.pathname.replace("admin/upload/", "");
+
+    async function init() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { window.location.href = "../../admin/"; return; }
+    }
+
+    document.getElementById("upload-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { window.location.href = "../../admin/"; return; }
+
+      const btn = document.getElementById("upload-btn");
+      const errEl = document.getElementById("error-msg");
+      btn.disabled = true;
+      btn.textContent = "Uploading...";
+      errEl.style.display = "none";
+
+      const form = new FormData();
+      form.append("file", document.getElementById("file").files[0]);
+      form.append("name", document.getElementById("name").value.trim());
+      form.append("description", document.getElementById("desc").value.trim());
+      form.append("recipient_password", document.getElementById("recipient-pw").value);
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/upload-doc`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          body: form,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        const link = `${BASE_URL}docs/?slug=${data.slug}`;
+        document.getElementById("result-link").value = link;
+        document.getElementById("result").style.display = "block";
+        document.getElementById("upload-form").reset();
+      } catch (err) {
+        errEl.textContent = "Error: " + err.message;
+        errEl.style.display = "block";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Upload & Generate Link";
+      }
+    });
+
+    document.getElementById("copy-btn").addEventListener("click", () => {
+      navigator.clipboard.writeText(document.getElementById("result-link").value);
+      document.getElementById("copy-btn").textContent = "Copied!";
+      setTimeout(() => document.getElementById("copy-btn").textContent = "Copy", 2000);
+    });
+
+    init();
+  </script>
+</body>
+</html>
