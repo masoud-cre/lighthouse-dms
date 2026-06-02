@@ -38,7 +38,7 @@
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     sb.auth.getSession().then(({ data: { session } }) => {
-      if (session) window.location.href = "../dashboard/";
+      if (session) window.location.href = "dashboard/";
     });
 
     document.getElementById("login-btn").addEventListener("click", async () => {
@@ -57,7 +57,7 @@
         btn.disabled = false;
         btn.textContent = "Sign In";
       } else {
-        window.location.href = "../dashboard/";
+        window.location.href = "dashboard/";
       }
     });
 
