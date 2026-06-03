@@ -153,6 +153,7 @@ body {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
 }
 .btn-ghost:hover { background: var(--bg-card); color: var(--text-1); }
