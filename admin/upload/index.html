@@ -4,67 +4,78 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lighthouse DMS — Upload</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Cpath d='M9 8h9l5 5v11a1 1 0 01-1 1H9a1 1 0 01-1-1V9a1 1 0 011-1z' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M18 8v5h5' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cline x1='11' y1='17' x2='21' y2='17' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='11' y1='20' x2='18' y2='20' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; }
-    header { background: white; border-bottom: 1px solid #eee; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
-    .logo { font-size: 18px; font-weight: 700; color: #111; }
-    .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; }
-    .btn-ghost { background: transparent; color: #666; border: 1px solid #ddd; }
-    main { max-width: 600px; margin: 40px auto; padding: 0 32px; }
-    .card { background: white; padding: 36px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); }
-    h2 { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
-    label { display: block; font-size: 13px; font-weight: 500; color: #444; margin-bottom: 6px; margin-top: 16px; }
-    input, textarea { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; transition: border-color 0.2s; }
-    input:focus, textarea:focus { border-color: #111; }
-    textarea { resize: vertical; }
-    .file-hint { font-size: 12px; color: #888; margin-top: 4px; }
-    .btn-primary { background: #111; color: white; padding: 12px; width: 100%; font-size: 14px; margin-top: 24px; border-radius: 8px; }
-    .btn-primary:hover { background: #333; }
-    .btn-primary:disabled { background: #999; cursor: not-allowed; }
-    .error { color: #dc2626; font-size: 13px; margin-top: 12px; display: none; }
-    .result { display: none; margin-top: 24px; padding: 20px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; }
-    .result strong { display: block; margin-bottom: 8px; color: #15803d; }
-    .result-link-row { display: flex; gap: 8px; margin-top: 8px; }
-    .result-link-row input { flex: 1; background: white; }
-    .copy-btn { padding: 10px 16px; background: #111; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-    .hint { font-size: 12px; color: #555; margin-top: 10px; }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>* { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body>
-  <header>
-    <div class="logo">Lighthouse DMS</div>
-    <a href="../dashboard/" class="btn btn-ghost">← Dashboard</a>
-  </header>
-  <main>
-    <div class="card">
-      <h2>Upload Document</h2>
-      <form id="upload-form">
-        <label>Document Name *</label>
-        <input id="name" type="text" placeholder="e.g. Q2 Case Study — Acme Corp" required />
+<body class="bg-[#080810] text-white min-h-screen">
 
-        <label>Description</label>
-        <textarea id="desc" rows="3" placeholder="Brief description shown to the recipient"></textarea>
-
-        <label>File * <span class="file-hint">PDF, PPTX, DOCX, MP4, JPG, PNG — max 50MB</span></label>
-        <input id="file" type="file" accept=".pdf,.ppt,.pptx,.doc,.docx,.mp4,.jpg,.jpeg,.png" required />
-
-        <label>Recipient Password *</label>
-        <input id="recipient-pw" type="text" placeholder="Password you'll share with the recipient" required />
-
-        <button type="submit" id="upload-btn" class="btn btn-primary">Upload & Generate Link</button>
-        <div class="error" id="error-msg"></div>
-      </form>
-
-      <div class="result" id="result">
-        <strong>Document uploaded successfully!</strong>
-        <p>Send this link and the password to your recipient:</p>
-        <div class="result-link-row">
-          <input id="result-link" type="text" readonly />
-          <button class="copy-btn" id="copy-btn">Copy</button>
+  <header class="border-b border-white/8 px-6 py-4">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg bg-indigo-500/30 border border-indigo-400/40 flex items-center justify-center">
+          <svg class="w-3.5 h-3.5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
         </div>
-        <p class="hint">The recipient will need the password you set above to access the document.</p>
+        <span class="text-sm font-semibold text-white/70 tracking-tight">Lighthouse DMS</span>
+      </div>
+      <a href="../dashboard/" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white text-xs font-medium transition-all">
+        ← Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-xl mx-auto px-6 py-10">
+    <h1 class="text-2xl font-bold text-white mb-1">Upload Document</h1>
+    <p class="text-white/40 text-sm mb-8">Set a recipient password to gate access. Each upload generates a unique shareable link.</p>
+
+    <form id="upload-form" class="space-y-5">
+      <div>
+        <label class="block text-xs font-medium text-white/50 mb-2 uppercase tracking-wide">Document Name *</label>
+        <input id="name" type="text" placeholder="e.g. Q2 Case Study — Acme Corp" required
+          class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 text-sm outline-none focus:border-indigo-500/60 transition-all" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-white/50 mb-2 uppercase tracking-wide">Description</label>
+        <textarea id="desc" rows="3" placeholder="Brief description shown to the recipient"
+          class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 text-sm outline-none focus:border-indigo-500/60 transition-all resize-none font-sans"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-white/50 mb-2 uppercase tracking-wide">File *</label>
+        <input id="file" type="file" accept=".pdf,.ppt,.pptx,.doc,.docx,.mp4,.jpg,.jpeg,.png" required
+          class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white/50 text-sm outline-none focus:border-indigo-500/60 transition-all file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-500/20 file:text-indigo-300 file:text-xs file:font-medium cursor-pointer" />
+        <p class="text-white/25 text-xs mt-2">PDF, PPTX, DOCX, MP4, JPG, PNG — max 50MB</p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-white/50 mb-2 uppercase tracking-wide">Recipient Password *</label>
+        <input id="recipient-pw" type="text" placeholder="Password you'll share with the recipient" required
+          class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 text-sm outline-none focus:border-indigo-500/60 transition-all" />
+      </div>
+
+      <button type="submit" id="upload-btn"
+        class="w-full py-3 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 disabled:opacity-50 disabled:cursor-not-allowed">
+        Upload & Generate Link
+      </button>
+      <p id="error-msg" class="text-red-400 text-xs hidden"></p>
+    </form>
+
+    <!-- Success result -->
+    <div id="result" class="hidden mt-6 p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+      <p class="text-emerald-300 text-sm font-semibold mb-1">Document uploaded!</p>
+      <p class="text-white/40 text-xs mb-3">Share this link along with the recipient password.</p>
+      <div class="flex gap-2">
+        <input id="result-link" type="text" readonly
+          class="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 text-xs outline-none" />
+        <button id="copy-btn"
+          class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-medium transition-all whitespace-nowrap">
+          Copy
+        </button>
       </div>
     </div>
   </main>
@@ -89,7 +100,7 @@
       const errEl = document.getElementById("error-msg");
       btn.disabled = true;
       btn.textContent = "Uploading...";
-      errEl.style.display = "none";
+      errEl.classList.add("hidden");
 
       const form = new FormData();
       form.append("file", document.getElementById("file").files[0]);
@@ -106,13 +117,12 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
 
-        const link = `${BASE_URL}docs/?slug=${data.slug}`;
-        document.getElementById("result-link").value = link;
-        document.getElementById("result").style.display = "block";
+        document.getElementById("result-link").value = `${BASE_URL}docs/?slug=${data.slug}`;
+        document.getElementById("result").classList.remove("hidden");
         document.getElementById("upload-form").reset();
       } catch (err) {
         errEl.textContent = "Error: " + err.message;
-        errEl.style.display = "block";
+        errEl.classList.remove("hidden");
       } finally {
         btn.disabled = false;
         btn.textContent = "Upload & Generate Link";
@@ -121,8 +131,9 @@
 
     document.getElementById("copy-btn").addEventListener("click", () => {
       navigator.clipboard.writeText(document.getElementById("result-link").value);
-      document.getElementById("copy-btn").textContent = "Copied!";
-      setTimeout(() => document.getElementById("copy-btn").textContent = "Copy", 2000);
+      const btn = document.getElementById("copy-btn");
+      btn.textContent = "Copied!";
+      setTimeout(() => btn.textContent = "Copy", 2000);
     });
 
     init();

@@ -4,58 +4,63 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lighthouse DMS — Document Access</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; flex-direction: column; }
-    header { background: white; border-bottom: 1px solid #eee; padding: 16px 32px; }
-    .logo { font-size: 18px; font-weight: 700; color: #111; }
-    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px; }
-    .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); width: 100%; max-width: 440px; }
-    h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-    .doc-desc { font-size: 14px; color: #666; margin-bottom: 24px; }
-    label { display: block; font-size: 13px; font-weight: 500; color: #444; margin-bottom: 6px; }
-    input[type="password"] { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 16px; transition: border-color 0.2s; }
-    input[type="password"]:focus { border-color: #111; }
-    .btn-primary { width: 100%; padding: 12px; background: #111; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
-    .btn-primary:hover { background: #333; }
-    .btn-primary:disabled { background: #999; cursor: not-allowed; }
-    .error { color: #dc2626; font-size: 13px; margin-top: 12px; display: none; }
-    #viewer { display: none; }
-    .viewer-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
-    .download-btn { padding: 8px 18px; background: #111; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
-    .download-btn:hover { background: #333; }
-    iframe { width: 100%; height: 70vh; border: none; border-radius: 8px; box-shadow: 0 1px 8px rgba(0,0,0,0.08); }
-    img.preview { max-width: 100%; border-radius: 8px; }
-    video.preview { width: 100%; border-radius: 8px; }
-    .expire-note { font-size: 12px; color: #999; margin-top: 10px; }
-    .not-found { text-align: center; color: #888; }
-  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Cpath d='M9 8h9l5 5v11a1 1 0 01-1 1H9a1 1 0 01-1-1V9a1 1 0 011-1z' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M18 8v5h5' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cline x1='11' y1='17' x2='21' y2='17' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='11' y1='20' x2='18' y2='20' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>* { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body>
-  <header><div class="logo">Lighthouse DMS</div></header>
-  <main>
+<body class="bg-[#080810] text-white min-h-screen flex flex-col">
 
-    <!-- Gate -->
-    <div class="card" id="gate">
-      <h2 id="gate-title">Access Document</h2>
-      <p class="doc-desc">Enter the password provided by your Cresta contact.</p>
-      <label>Password</label>
-      <input type="password" id="pw-input" placeholder="••••••••" />
-      <button class="btn-primary" id="pw-btn">Access Document</button>
-      <div class="error" id="pw-error"></div>
+  <header class="border-b border-white/8 px-6 py-4">
+    <div class="max-w-5xl mx-auto flex items-center gap-2">
+      <div class="w-7 h-7 rounded-lg bg-indigo-500/30 border border-indigo-400/40 flex items-center justify-center">
+        <svg class="w-3.5 h-3.5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <span class="text-sm font-semibold text-white/70 tracking-tight">Lighthouse DMS</span>
+    </div>
+  </header>
+
+  <main class="flex-1 flex items-center justify-center px-4 py-12">
+
+    <!-- Password gate -->
+    <div id="gate" class="w-full max-w-sm">
+      <div class="bg-white/5 border border-white/10 rounded-2xl p-8">
+        <div class="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center mb-5">
+          <svg class="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+        </div>
+        <h1 class="text-xl font-bold text-white mb-1">Access Document</h1>
+        <p class="text-white/40 text-sm mb-6">Enter the password provided by your Cresta contact.</p>
+
+        <label class="block text-xs font-medium text-white/50 mb-2 uppercase tracking-wide">Password</label>
+        <input type="password" id="pw-input" placeholder="••••••••"
+          class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 text-sm outline-none focus:border-indigo-500/60 transition-all mb-4" />
+
+        <button id="pw-btn"
+          class="w-full py-3 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 disabled:opacity-50 disabled:cursor-not-allowed">
+          Access Document
+        </button>
+        <p id="pw-error" class="text-red-400 text-xs mt-3 hidden"></p>
+      </div>
     </div>
 
     <!-- Viewer -->
-    <div id="viewer" style="width:100%;max-width:900px;">
-      <div class="viewer-header">
+    <div id="viewer" class="hidden w-full max-w-5xl">
+      <div class="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div>
-          <h2 id="doc-title"></h2>
-          <p class="doc-desc" id="doc-desc"></p>
+          <h1 id="doc-title" class="text-2xl font-bold text-white mb-1"></h1>
+          <p id="doc-desc" class="text-white/40 text-sm"></p>
         </div>
-        <button class="download-btn" id="download-btn">Download</button>
+        <button id="download-btn"
+          class="px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-all hover:shadow-lg hover:shadow-indigo-500/25">
+          Download
+        </button>
       </div>
-      <div id="view-area"></div>
-      <p class="expire-note">Access link expires in 15 minutes. Refresh and re-enter your password to renew.</p>
+      <div id="view-area" class="rounded-2xl overflow-hidden border border-white/10"></div>
+      <p class="text-white/20 text-xs mt-4 text-center">Access link expires in 15 minutes. Refresh and re-enter your password to renew.</p>
     </div>
 
   </main>
@@ -67,14 +72,14 @@
     let documentId = null;
 
     if (!slug) {
-      document.getElementById("gate").innerHTML = '<div class="not-found"><h2>No document specified</h2><p>Check your link and try again.</p></div>';
+      document.getElementById("gate").innerHTML = `<div class="text-center text-white/30 py-20"><p class="text-lg font-medium">No document specified</p><p class="text-sm mt-2">Check your link and try again.</p></div>`;
     }
 
     document.getElementById("pw-btn").addEventListener("click", async () => {
       const password = document.getElementById("pw-input").value;
       const errEl = document.getElementById("pw-error");
       const btn = document.getElementById("pw-btn");
-      errEl.style.display = "none";
+      errEl.classList.add("hidden");
       btn.disabled = true;
       btn.textContent = "Verifying...";
 
@@ -88,7 +93,7 @@
 
         if (!res.ok) {
           errEl.textContent = data.error || "Incorrect password.";
-          errEl.style.display = "block";
+          errEl.classList.remove("hidden");
           btn.disabled = false;
           btn.textContent = "Access Document";
           return;
@@ -98,23 +103,22 @@
         documentId = data.document_id;
         document.getElementById("doc-title").textContent = data.name;
         document.getElementById("doc-desc").textContent = data.description || "";
-        document.getElementById("gate").style.display = "none";
-        document.getElementById("viewer").style.display = "block";
+        document.getElementById("gate").classList.add("hidden");
+        document.getElementById("viewer").classList.remove("hidden");
 
         const viewArea = document.getElementById("view-area");
-        const url = signedUrl;
-        if (url.match(/\.pdf|pdf/i)) {
-          viewArea.innerHTML = `<iframe src="${url}"></iframe>`;
-        } else if (url.match(/\.(jpg|jpeg|png)/i)) {
-          viewArea.innerHTML = `<img class="preview" src="${url}" />`;
-        } else if (url.match(/\.mp4/i)) {
-          viewArea.innerHTML = `<video class="preview" src="${url}" controls></video>`;
+        if (signedUrl.match(/\.pdf|pdf/i)) {
+          viewArea.innerHTML = `<iframe src="${signedUrl}" class="w-full h-[75vh] border-0"></iframe>`;
+        } else if (signedUrl.match(/\.(jpg|jpeg|png)/i)) {
+          viewArea.innerHTML = `<img src="${signedUrl}" class="max-w-full rounded-2xl" />`;
+        } else if (signedUrl.match(/\.mp4/i)) {
+          viewArea.innerHTML = `<video src="${signedUrl}" controls class="w-full rounded-2xl"></video>`;
         } else {
-          viewArea.innerHTML = `<p style="color:#666;padding:20px 0">Preview not available for this file type. Use the Download button.</p>`;
+          viewArea.innerHTML = `<div class="p-10 text-center text-white/30 text-sm">Preview not available. Use the Download button.</div>`;
         }
       } catch (err) {
         errEl.textContent = "Something went wrong. Please try again.";
-        errEl.style.display = "block";
+        errEl.classList.remove("hidden");
         btn.disabled = false;
         btn.textContent = "Access Document";
       }
