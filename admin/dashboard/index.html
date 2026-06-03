@@ -40,6 +40,14 @@
       </div>
       <div class="header-actions">
         <a href="../upload/" class="btn-primary" style="font-size:12px;padding:8px 14px;text-decoration:none;">+ Upload</a>
+        <a href="../logs/" class="btn-ghost" style="font-size:12px;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Access Log
+        </a>
+        <a href="../users/" class="btn-ghost" style="font-size:12px;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          Users
+        </a>
         <button id="theme-btn" class="btn-icon" onclick="cycleTheme()" title="Toggle theme"></button>
         <button id="passkey-btn" class="btn-icon" title="Set up Passkey" onclick="openPasskeyModal()">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
@@ -102,16 +110,17 @@
       }
 
       const tbody = documents.map((doc, i) => `
-        <tr style="cursor:pointer;" onclick="window.location.href='../doc/?slug=${doc.slug}'">
-          <td style="font-weight:600;">${doc.name}</td>
+        <tr style="cursor:pointer;" onclick="openDoc('${doc.slug}', this)">
+          <td style="font-weight:600;">${doc.name} <span id="loading-${doc.slug}" style="font-size:11px;color:#818cf8;display:none;">Opening…</span></td>
           <td>${doc.has_password
             ? `<span class="badge-lock"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Protected</span>`
             : `<span class="badge-open"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>Open</span>`
           }</td>
           <td style="text-align:center;"><span class="badge-views">${doc.views}</span></td>
           <td style="text-align:center;"><span class="badge-dl">${doc.downloads}</span></td>
-          <td onclick="event.stopPropagation()">
+          <td onclick="event.stopPropagation()" style="white-space:nowrap;">
             <button class="btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="copyLink('${doc.slug}',this)">Copy Link</button>
+            <a href="../doc/?slug=${doc.slug}" class="btn-ghost" style="padding:5px 10px;font-size:11px;text-decoration:none;margin-left:4px;">Manage</a>
           </td>
           <td style="color:var(--text-3);font-size:12px;">${new Date(doc.created_at).toLocaleDateString()}</td>
         </tr>`).join("");
@@ -127,6 +136,25 @@
             <tbody>${tbody}</tbody>
           </table>
         </div>`;
+    }
+
+    async function openDoc(slug, row) {
+      const indicator = document.getElementById(`loading-${slug}`);
+      if (indicator) indicator.style.display = "inline";
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-view-doc`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ slug }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        window.open(data.signed_url, "_blank");
+      } catch (err) {
+        alert("Could not open document: " + err.message);
+      } finally {
+        if (indicator) indicator.style.display = "none";
+      }
     }
 
     function copyLink(slug, btn) {
@@ -147,19 +175,28 @@
       status.textContent = "Generating registration options…";
 
       try {
+        // Guard: SimpleWebAuthnBrowser must be loaded
+        if (typeof SimpleWebAuthnBrowser === "undefined") {
+          throw new Error("WebAuthn library not loaded. Please refresh the page.");
+        }
+
+        // Guard: ensure we have a fresh session
+        const { data: { session: freshSession } } = await sb.auth.getSession();
+        if (!freshSession) throw new Error("Session expired. Please sign in again.");
+        session = freshSession;
+
         // 1. Get registration options from server
         const optRes = await fetch(`${SUPABASE_URL}/functions/v1/passkey-register-start`, {
           method: "POST",
           headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
         });
-        if (!optRes.ok) throw new Error((await optRes.json()).error);
-        const options = await optRes.json();
+        const optBody = await optRes.json();
+        if (!optRes.ok) throw new Error(optBody.error || `Server error ${optRes.status}`);
 
         status.textContent = "Waiting for your device authenticator…";
 
-        // 2. Trigger browser authenticator
-        const { startRegistration } = SimpleWebAuthnBrowser;
-        const credential = await startRegistration({ optionsJSON: options });
+        // 2. Trigger browser authenticator — v10 takes options directly (no { optionsJSON } wrapper)
+        const credential = await SimpleWebAuthnBrowser.startRegistration(optBody);
 
         status.textContent = "Verifying with server…";
 
@@ -169,7 +206,8 @@
           headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
           body: JSON.stringify(credential),
         });
-        if (!verRes.ok) throw new Error((await verRes.json()).error);
+        const verBody = await verRes.json();
+        if (!verRes.ok) throw new Error(verBody.error || `Verification error ${verRes.status}`);
 
         status.style.color = "#34d399";
         status.textContent = "✓ Passkey registered! You can now sign in with your device.";
@@ -177,7 +215,13 @@
         setTimeout(closePasskeyModal, 2500);
       } catch (err) {
         status.style.color = "#ef4444";
-        status.textContent = err.message || "Registration failed. Please try again.";
+        // Friendly messages for known WebAuthn errors
+        const msg = err.message || "";
+        status.textContent =
+          msg.includes("NotAllowedError") || msg.includes("cancelled") ? "Cancelled — try again when ready." :
+          msg.includes("NotSupportedError") ? "This device or browser doesn't support passkeys." :
+          msg.includes("InvalidStateError") ? "A passkey is already registered on this device." :
+          msg || "Registration failed. Please try again.";
         btn.disabled = false; btn.textContent = "Try Again";
       }
     }
