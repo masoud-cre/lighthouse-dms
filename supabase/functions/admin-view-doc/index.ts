@@ -23,12 +23,10 @@ Deno.serve(async (req) => {
     const { slug } = await req.json();
     if (!slug) return new Response(JSON.stringify({ error: "slug required" }), { status: 400, headers: corsHeaders });
 
-    // Fetch doc — must be owned by this user
     const { data: doc, error } = await supabase
       .from("documents")
       .select("id, name, description, file_path, file_type")
       .eq("slug", slug)
-      .eq("uploaded_by", user.id)
       .single();
 
     if (error || !doc) return new Response(JSON.stringify({ error: "Document not found" }), { status: 404, headers: corsHeaders });
