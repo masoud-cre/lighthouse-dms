@@ -57,14 +57,31 @@
   <div id="add-modal" style="display:none;position:fixed;inset:0;z-index:100;">
     <div class="modal-overlay" onclick="if(event.target===this)closeAddModal()">
       <div class="dms-modal">
-        <h3 style="font-size:16px;font-weight:700;color:var(--text-1);margin:0 0 4px;">Add Team Member</h3>
-        <p style="font-size:13px;color:var(--text-3);margin:0 0 20px;">A temporary password will be generated. Share it securely with the new user.</p>
+        <h3 style="font-size:16px;font-weight:700;color:var(--text-1);margin:0 0 20px;">Add Team Member</h3>
 
         <label class="dms-label">Full Name</label>
         <input id="add-name" type="text" class="dms-input" placeholder="Jane Smith" style="margin-bottom:12px;" />
 
         <label class="dms-label">Email *</label>
         <input id="add-email" type="email" class="dms-input" placeholder="jane@cresta.ai" style="margin-bottom:12px;" />
+
+        <label class="dms-label">Password *</label>
+        <div style="position:relative;margin-bottom:12px;">
+          <input id="add-pw" type="password" class="dms-input" placeholder="••••••••" style="padding-right:44px;" />
+          <button type="button" onclick="toggleAddPw()" style="position:absolute;right:0;top:0;bottom:0;width:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-3);">
+            <svg id="add-eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg id="add-eye-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+
+        <label class="dms-label">Confirm Password *</label>
+        <div style="position:relative;margin-bottom:12px;">
+          <input id="add-pw2" type="password" class="dms-input" placeholder="••••••••" style="padding-right:44px;" />
+          <button type="button" onclick="toggleAddPw2()" style="position:absolute;right:0;top:0;bottom:0;width:44px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-3);">
+            <svg id="add-eye2-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg id="add-eye2-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
 
         <label class="dms-label">Access Level</label>
         <select id="add-role" class="dms-input" style="margin-bottom:20px;">
@@ -73,9 +90,7 @@
         </select>
 
         <div class="temp-pw-box" id="add-result">
-          <p style="font-size:13px;color:var(--text-2);margin:0 0 8px;font-weight:600;">User created! Share these credentials:</p>
-          <p style="font-size:13px;color:var(--text-3);margin:0 0 6px;">Temporary password: <code id="add-temp-pw"></code></p>
-          <p style="font-size:12px;color:var(--text-3);margin:0;">The user should change their password after first login.</p>
+          <p style="font-size:13px;color:var(--text-2);margin:0;font-weight:600;">User created successfully!</p>
         </div>
 
         <p id="add-error" style="color:#ef4444;font-size:13px;display:none;margin-bottom:12px;"></p>
@@ -204,11 +219,28 @@
     }
 
     // Add user
+    function toggleAddPw() {
+      const input = document.getElementById("add-pw");
+      const visible = input.type === "text";
+      input.type = visible ? "password" : "text";
+      document.getElementById("add-eye-show").style.display = visible ? "block" : "none";
+      document.getElementById("add-eye-hide").style.display = visible ? "none" : "block";
+    }
+    function toggleAddPw2() {
+      const input = document.getElementById("add-pw2");
+      const visible = input.type === "text";
+      input.type = visible ? "password" : "text";
+      document.getElementById("add-eye2-show").style.display = visible ? "block" : "none";
+      document.getElementById("add-eye2-hide").style.display = visible ? "none" : "block";
+    }
+
     function openAddModal() {
       document.getElementById("add-result").style.display = "none";
       document.getElementById("add-error").style.display = "none";
       document.getElementById("add-email").value = "";
       document.getElementById("add-name").value = "";
+      document.getElementById("add-pw").value = "";
+      document.getElementById("add-pw2").value = "";
       document.getElementById("add-role").value = "standard";
       document.getElementById("add-btn").disabled = false;
       document.getElementById("add-btn").textContent = "Create User";
@@ -220,14 +252,18 @@
       const email     = document.getElementById("add-email").value.trim();
       const full_name = document.getElementById("add-name").value.trim();
       const role      = document.getElementById("add-role").value;
+      const password  = document.getElementById("add-pw").value;
+      const password2 = document.getElementById("add-pw2").value;
       const btn       = document.getElementById("add-btn");
       const errEl     = document.getElementById("add-error");
-      if (!email) { errEl.textContent = "Email is required."; errEl.style.display = "block"; return; }
       errEl.style.display = "none";
+      if (!email) { errEl.textContent = "Email is required."; errEl.style.display = "block"; return; }
+      if (!password) { errEl.textContent = "Password is required."; errEl.style.display = "block"; return; }
+      if (password.length < 8) { errEl.textContent = "Password must be at least 8 characters."; errEl.style.display = "block"; return; }
+      if (password !== password2) { errEl.textContent = "Passwords do not match."; errEl.style.display = "block"; return; }
       btn.disabled = true; btn.textContent = "Creating…";
       try {
-        const { temp_password } = await api("invite", { email, full_name, role });
-        document.getElementById("add-temp-pw").textContent = temp_password;
+        await api("invite", { email, full_name, role, password });
         document.getElementById("add-result").style.display = "block";
         btn.textContent = "Done";
         await loadUsers();
