@@ -5,9 +5,9 @@
   <script>(function(){var t=localStorage.getItem("dms-theme")||"system";document.documentElement.setAttribute("data-theme",t==="dark"||(t==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light");})();</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lighthouse DMS — Dashboard</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Cpath d='M9 8h9l5 5v11a1 1 0 01-1 1H9a1 1 0 01-1-1V9a1 1 0 011-1z' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M18 8v5h5' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cline x1='11' y1='17' x2='21' y2='17' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='11' y1='20' x2='18' y2='20' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23304FFE'/%3E%3Cpath d='M9 8h9l5 5v11a1 1 0 01-1 1H9a1 1 0 01-1-1V9a1 1 0 011-1z' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M18 8v5h5' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cline x1='11' y1='17' x2='21' y2='17' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='11' y1='20' x2='18' y2='20' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../theme.css" />
   <script src="../../theme.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -34,7 +34,7 @@
         <div class="dms-divider"></div>
         <div class="dms-product">
           <div class="dms-product-icon">
-            <svg width="12" height="12" fill="none" stroke="#818cf8" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <svg width="12" height="12" fill="none" stroke="#83A8FE" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           </div>
           <span class="dms-product-label">Lighthouse DMS</span>
         </div>
@@ -69,8 +69,8 @@
     <div class="dms-modal-backdrop" onclick="if(event.target===this)closePasskeyModal()">
       <div class="dms-modal">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-          <div style="width:40px;height:40px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-            <svg width="20" height="20" fill="none" stroke="#818cf8" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          <div style="width:40px;height:40px;background:rgba(48,79,254,0.15);border:1px solid rgba(48,79,254,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+            <svg width="20" height="20" fill="none" stroke="#83A8FE" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
           </div>
           <div>
             <h3 style="font-size:16px;font-weight:700;color:var(--text-1);margin:0 0 2px;">Set Up Passkey</h3>
@@ -112,7 +112,7 @@
 
       const tbody = documents.map((doc, i) => `
         <tr style="cursor:pointer;" onclick="openDoc('${doc.slug}', this)">
-          <td style="font-weight:600;">${doc.name} <span id="loading-${doc.slug}" style="font-size:11px;color:#818cf8;display:none;">Opening…</span></td>
+          <td style="font-weight:600;">${doc.name} <span id="loading-${doc.slug}" style="font-size:11px;color:#83A8FE;display:none;">Opening…</span></td>
           <td>${doc.has_password
             ? `<span class="badge-lock"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Protected</span>`
             : `<span class="badge-open"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>Open</span>`
@@ -160,7 +160,7 @@
 
     function copyLink(slug, btn) {
       navigator.clipboard.writeText(`${BASE_URL}docs/?slug=${slug}`);
-      btn.textContent = "Copied!"; btn.style.color = "#818cf8";
+      btn.textContent = "Copied!"; btn.style.color = "#83A8FE";
       setTimeout(() => { btn.textContent = "Copy Link"; btn.style.color = ""; }, 2000);
     }
 

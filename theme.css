@@ -1,36 +1,60 @@
-/* ─── DMS Theme Variables ─────────────────────────────── */
+/* ─── Cresta Brand Font ───────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,400&display=swap');
+
+/* ─── Cresta Brand Color Tokens ───────────────────────── */
+/* Cresta Purple:  #170B32  |  Cresta Blue: #304FFE        */
+/* Accent Blue:    #83A8FE  |  Violet:      #8A7BD5        */
+/* Light Blue:     #F1F5FE  |  Dark Gray:   #595959        */
+
+/* ─── Light Theme ─────────────────────────────────────── */
 :root, [data-theme="light"] {
-  --bg:          #f0f2f5;
-  --bg-card:     #ffffff;
-  --bg-subtle:   rgba(0,0,0,0.03);
-  --bg-input:    rgba(0,0,0,0.04);
-  --border:      rgba(0,0,0,0.09);
-  --border-input:rgba(0,0,0,0.12);
-  --text-1:      #0f172a;
-  --text-2:      #475569;
-  --text-3:      #94a3b8;
-  --text-4:      rgba(0,0,0,0.28);
-  --header-bg:   rgba(255,255,255,0.92);
-  --shadow:      0 1px 12px rgba(0,0,0,0.06);
+  --bg:           #F1F5FE;               /* Cresta Light Blue */
+  --bg-card:      #ffffff;
+  --bg-subtle:    rgba(48,79,254,0.04);  /* Cresta Blue tint */
+  --bg-input:     rgba(48,79,254,0.03);
+  --border:       rgba(23,11,50,0.09);   /* Cresta Purple tint */
+  --border-input: rgba(23,11,50,0.14);
+  --text-1:       #170B32;               /* Cresta Purple */
+  --text-2:       #595959;               /* Cresta Dark Gray */
+  --text-3:       #757575;               /* Brand label gray */
+  --text-4:       rgba(23,11,50,0.28);
+  --header-bg:    rgba(241,245,254,0.94);
+  --shadow:       0 1px 14px rgba(23,11,50,0.07);
+  --accent:       #304FFE;               /* Cresta Blue */
+  --accent-hover: #1a3fd4;
+  --accent-soft:  rgba(48,79,254,0.10);
+  --accent-text:  #304FFE;
+  --accent-light: #83A8FE;               /* Accent Blue */
+  --logo-color:   #170B32;              /* Black logo on light bg */
 }
 
+/* ─── Dark Theme ──────────────────────────────────────── */
 [data-theme="dark"] {
-  --bg:          #080810;
-  --bg-card:     rgba(255,255,255,0.035);
-  --bg-subtle:   rgba(255,255,255,0.03);
-  --bg-input:    rgba(255,255,255,0.05);
-  --border:      rgba(255,255,255,0.08);
-  --border-input:rgba(255,255,255,0.10);
-  --text-1:      #ffffff;
-  --text-2:      rgba(255,255,255,0.60);
-  --text-3:      rgba(255,255,255,0.35);
-  --text-4:      rgba(255,255,255,0.20);
-  --header-bg:   rgba(8,8,16,0.92);
-  --shadow:      0 1px 12px rgba(0,0,0,0.4);
+  --bg:           #170B32;               /* Cresta Purple */
+  --bg-card:      rgba(255,255,255,0.04);
+  --bg-subtle:    rgba(255,255,255,0.035);
+  --bg-input:     rgba(255,255,255,0.06);
+  --border:       rgba(255,255,255,0.09);
+  --border-input: rgba(255,255,255,0.13);
+  --text-1:       #ffffff;
+  --text-2:       rgba(255,255,255,0.65);
+  --text-3:       rgba(255,255,255,0.40);
+  --text-4:       rgba(255,255,255,0.20);
+  --header-bg:    rgba(23,11,50,0.94);   /* Cresta Purple */
+  --shadow:       0 1px 14px rgba(0,0,0,0.45);
+  --accent:       #304FFE;               /* Cresta Blue */
+  --accent-hover: #4f6cff;
+  --accent-soft:  rgba(48,79,254,0.18);
+  --accent-text:  #83A8FE;               /* Accent Blue on dark */
+  --accent-light: #83A8FE;
+  --logo-color:   #ffffff;               /* White logo on dark bg */
 }
 
 /* ─── Base ────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+*, *::before, *::after {
+  box-sizing: border-box;
+  font-family: 'Barlow', -apple-system, BlinkMacSystemFont, sans-serif;
+}
 
 body {
   background: var(--bg);
@@ -38,6 +62,7 @@ body {
   transition: background 0.2s, color 0.2s;
   min-height: 100vh;
   margin: 0;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ─── Header ──────────────────────────────────────────── */
@@ -45,6 +70,7 @@ body {
   background: var(--header-bg);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 14px 24px;
   position: sticky;
   top: 0;
@@ -68,10 +94,11 @@ body {
   border-radius: 10px;
   color: var(--text-1);
   font-size: 14px;
+  font-family: 'Barlow', sans-serif;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, background 0.15s;
 }
-.dms-input:focus { border-color: #6366f1; }
+.dms-input:focus { border-color: var(--accent); background: var(--bg-card); }
 .dms-input::placeholder { color: var(--text-4); }
 
 /* ─── Table ───────────────────────────────────────────── */
@@ -81,10 +108,11 @@ body {
   text-align: left;
   padding: 12px 20px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-3);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-family: 'Barlow', sans-serif;
 }
 .dms-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
 .dms-table tbody tr:last-child { border-bottom: none; }
@@ -93,17 +121,22 @@ body {
 
 /* ─── Buttons ─────────────────────────────────────────── */
 .btn-primary {
-  background: #6366f1;
+  background: var(--accent);             /* Cresta Blue #304FFE */
   color: white;
   border: none;
   border-radius: 10px;
   padding: 10px 18px;
   font-size: 13px;
   font-weight: 600;
+  font-family: 'Barlow', sans-serif;
   cursor: pointer;
   transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
 }
-.btn-primary:hover { background: #818cf8; box-shadow: 0 4px 16px rgba(99,102,241,0.3); transform: translateY(-1px); }
+.btn-primary:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 4px 16px rgba(48,79,254,0.35);
+  transform: translateY(-1px);
+}
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 .btn-ghost {
@@ -114,6 +147,7 @@ body {
   padding: 8px 14px;
   font-size: 12px;
   font-weight: 500;
+  font-family: 'Barlow', sans-serif;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
   text-decoration: none;
@@ -138,25 +172,54 @@ body {
 .btn-icon:hover { background: var(--bg-card); color: var(--text-1); }
 
 /* ─── Badges ──────────────────────────────────────────── */
-.badge-lock   { background: rgba(245,158,11,0.12); color: #d97706; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; display:inline-flex;align-items:center;gap:4px; }
-.badge-open   { background: var(--bg-subtle); color: var(--text-3); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; display:inline-flex;align-items:center;gap:4px; }
-.badge-views  { background: rgba(99,102,241,0.12); color: #818cf8; border-radius: 6px; padding: 2px 10px; font-size: 12px; font-weight: 600; }
-.badge-dl     { background: rgba(16,185,129,0.12); color: #34d399; border-radius: 6px; padding: 2px 10px; font-size: 12px; font-weight: 600; }
+.badge-lock  {
+  background: rgba(245,158,11,0.12); color: #d97706;
+  border-radius: 6px; padding: 2px 8px;
+  font-size: 11px; font-weight: 700;
+  font-family: 'Barlow', sans-serif;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.badge-open  {
+  background: var(--bg-subtle); color: var(--text-3);
+  border-radius: 6px; padding: 2px 8px;
+  font-size: 11px; font-weight: 700;
+  font-family: 'Barlow', sans-serif;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.badge-views {
+  background: var(--accent-soft); color: var(--accent-text);
+  border-radius: 6px; padding: 2px 10px;
+  font-size: 12px; font-weight: 700;
+  font-family: 'Barlow', sans-serif;
+}
+.badge-dl    {
+  background: rgba(16,185,129,0.12); color: #10b981;
+  border-radius: 6px; padding: 2px 10px;
+  font-size: 12px; font-weight: 700;
+  font-family: 'Barlow', sans-serif;
+}
 
 /* ─── Logo area ───────────────────────────────────────── */
 .dms-logo-area { display: flex; align-items: center; gap: 12px; }
-.dms-logo-svg  { height: 18px; width: auto; }
-[data-theme="light"] .dms-logo-svg { filter: invert(1) brightness(0.2); }
+
+/* Logo SVG uses fill="currentColor" — color drives white vs dark */
+.dms-logo-svg  { height: 18px; width: auto; color: var(--logo-color); fill: var(--logo-color); }
+
 .dms-divider   { width: 1px; height: 16px; background: var(--border); }
 .dms-product   { display: flex; align-items: center; gap: 6px; }
 .dms-product-icon {
   width: 22px; height: 22px;
-  background: rgba(99,102,241,0.2);
-  border: 1px solid rgba(99,102,241,0.35);
+  background: var(--accent-soft);
+  border: 1px solid rgba(48,79,254,0.3);
   border-radius: 6px;
   display: flex; align-items: center; justify-content: center;
 }
-.dms-product-label { font-size: 11px; font-weight: 600; color: var(--text-3); letter-spacing: -0.01em; }
+.dms-product-label {
+  font-size: 11px; font-weight: 600;
+  color: var(--text-3);
+  letter-spacing: -0.01em;
+  font-family: 'Barlow', sans-serif;
+}
 
 /* ─── Modal ───────────────────────────────────────────── */
 .dms-modal-backdrop {
@@ -173,16 +236,26 @@ body {
   padding: 28px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
 }
 
-/* ─── Section labels ──────────────────────────────────── */
+/* ─── Section labels (Cresta eyebrow style) ───────────── */
 .dms-label {
   display: block;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-3);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
+  font-family: 'Barlow', sans-serif;
 }
+
+/* ─── Typography scale (Cresta brand spec) ───────────── */
+h1 { font-size: 32px; font-weight: 700; line-height: 1.1; letter-spacing: -0.01em; }
+h2 { font-size: 24px; font-weight: 600; line-height: 1.2; }
+h3 { font-size: 18px; font-weight: 600; line-height: 1.3; }
+
+/* ─── Cresta Blue accent links ────────────────────────── */
+a { color: var(--accent-text); }
+a:hover { color: var(--accent); }
