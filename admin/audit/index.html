@@ -149,7 +149,7 @@
         document.getElementById("audit-content").innerHTML =
           `<div style="border:1px dashed var(--border);border-radius:16px;padding:60px;text-align:center;color:#ef4444;font-size:14px;">${data.error || "Failed to load audit log."}</div>`;
       } else {
-        allEntries = (data.entries || data || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        allEntries = (data.logs || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       }
 
       document.getElementById("gate").style.display = "none";
@@ -244,12 +244,12 @@
               ${filtered.map(e => {
                 const label = ACTION_LABELS[e.action] || e.action;
                 const badgeClass = ACTION_BADGE_CLASS[e.action] || "action-badge badge-other";
-                const details = e.details ? (typeof e.details === "object" ? JSON.stringify(e.details) : e.details) : "—";
+                const meta = e.metadata ? (typeof e.metadata === "object" ? JSON.stringify(e.metadata) : e.metadata) : "—";
                 return `<tr>
-                  <td style="font-size:13px;color:var(--text-2);">${e.user_email || e.user_id || "—"}</td>
+                  <td style="font-size:13px;color:var(--text-2);">${e.user_email || "—"}</td>
                   <td><span class="${badgeClass}">${label}</span></td>
-                  <td style="font-weight:500;font-size:13px;">${e.target || "—"}</td>
-                  <td style="font-size:12px;color:var(--text-3);max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${String(details).replace(/"/g,'&quot;')}">${details}</td>
+                  <td style="font-weight:500;font-size:13px;">${e.target_name || "—"}</td>
+                  <td style="font-size:12px;color:var(--text-3);max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${String(meta).replace(/"/g,'&quot;')}">${meta}</td>
                   <td style="color:var(--text-2);font-size:13px;white-space:nowrap;">${new Date(e.created_at).toLocaleString()}</td>
                 </tr>`;
               }).join("")}
