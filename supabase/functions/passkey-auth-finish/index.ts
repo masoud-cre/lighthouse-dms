@@ -87,10 +87,49 @@ async function verifyAssertion(params: {
   signedData.set(authData, 0);
   signedData.set(clientDataHash, authData.length);
 
+  // WebAuthn signatures are DER/ASN.1 encoded.
+  // crypto.subtle.verify(ECDSA) requires raw IEEE P1363 format (r‖s, 64 bytes).
+  const rawSig = derToP1363(signature);
+
   const cryptoKey = await importCOSEKey(storedPublicKey);
-  const verified  = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, cryptoKey, signature, signedData);
+  const verified  = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, cryptoKey, rawSig, signedData);
 
   return { verified, newCounter };
+}
+
+/**
+ * Convert a DER/ASN.1-encoded ECDSA signature to IEEE P1363 raw format.
+ * WebAuthn authenticators always produce DER; Web Crypto expects P1363.
+ * DER: 30 [len] 02 [rLen] [r…] 02 [sLen] [s…]
+ * P1363: r (32 bytes, zero-padded) ‖ s (32 bytes, zero-padded)
+ */
+function derToP1363(der: Uint8Array): Uint8Array {
+  let offset = 0;
+  if (der[offset++] !== 0x30) throw new Error("DER signature missing SEQUENCE tag");
+  // Skip length field (short or long form)
+  if (der[offset] & 0x80) offset += 1 + (der[offset] & 0x7f);
+  else offset++;
+
+  // Read r
+  if (der[offset++] !== 0x02) throw new Error("DER signature missing INTEGER tag (r)");
+  const rLen = der[offset++];
+  let r = der.slice(offset, offset + rLen);
+  offset += rLen;
+
+  // Read s
+  if (der[offset++] !== 0x02) throw new Error("DER signature missing INTEGER tag (s)");
+  const sLen = der[offset++];
+  let s = der.slice(offset, offset + sLen);
+
+  // DER integers may have a leading 0x00 to indicate positive; strip it
+  while (r.length > 32 && r[0] === 0x00) r = r.slice(1);
+  while (s.length > 32 && s[0] === 0x00) s = s.slice(1);
+
+  // Zero-pad each to 32 bytes
+  const out = new Uint8Array(64);
+  out.set(r, 32 - r.length);
+  out.set(s, 64 - s.length);
+  return out;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
