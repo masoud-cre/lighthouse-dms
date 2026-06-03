@@ -229,11 +229,18 @@
       if (!s) { window.location.href = "../../admin/"; return; }
       session = s;
 
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/get-analytics`, {
-        headers: { Authorization: `Bearer ${session.access_token}` }
-      });
-      const { documents } = await res.json();
-      allDocs = documents || [];
+      try {
+        const res  = await fetch(`${SUPABASE_URL}/functions/v1/get-analytics`, {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        });
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+        allDocs = body.documents || [];
+      } catch (err) {
+        document.getElementById("doc-list").innerHTML =
+          `<div class="empty-state" style="color:#ef4444;">Failed to load documents: ${err.message}</div>`;
+        return;
+      }
       renderDocs();
     }
 
