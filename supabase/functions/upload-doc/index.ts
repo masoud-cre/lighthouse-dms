@@ -33,6 +33,7 @@ Deno.serve(async (req) => {
 
     // Generate a unique slug
     const slug = crypto.randomUUID().split("-")[0] + crypto.randomUUID().split("-")[0];
+    const short_code = crypto.randomUUID().replace(/-/g, "").slice(0, 7);
 
     // Store file under user's folder for RLS: {userId}/{slug}/{filename}
     const filePath = `${user.id}/${slug}/${file.name}`;
@@ -52,6 +53,7 @@ Deno.serve(async (req) => {
       .from("documents")
       .insert({
         slug,
+        short_code,
         name,
         description,
         file_path: filePath,
@@ -60,7 +62,7 @@ Deno.serve(async (req) => {
         recipient_password_hash: (recipientPassword && recipientPassword.trim()) ? recipientPassword : null,
         uploaded_by: user.id,
       })
-      .select("id, slug, name")
+      .select("id, slug, short_code, name")
       .single();
 
     if (docError) {
@@ -70,7 +72,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, slug: docData.slug, name: docData.name }),
+      JSON.stringify({ success: true, slug: docData.slug, short_code: docData.short_code, name: docData.name }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

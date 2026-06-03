@@ -52,12 +52,13 @@ Deno.serve(async (req) => {
     // Otherwise return summary for all docs belonging to this user
     const { data: docs } = await supabase
       .from("documents")
-      .select("id, slug, name, created_at, recipient_password_hash, access_logs(action)")
+      .select("id, slug, short_code, name, created_at, recipient_password_hash, access_logs(action)")
       .eq("uploaded_by", user.id)
       .order("created_at", { ascending: false });
 
     const summary = docs?.map(doc => ({
       slug: doc.slug,
+      short_code: doc.short_code,
       name: doc.name,
       created_at: doc.created_at,
       has_password: !!doc.recipient_password_hash,

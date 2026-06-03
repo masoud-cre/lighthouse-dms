@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { generateRegistrationOptions } from "https://esm.sh/@simplewebauthn/server@10";
+import { generateRegistrationOptions } from "https://esm.sh/@simplewebauthn/server@10?target=deno";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
