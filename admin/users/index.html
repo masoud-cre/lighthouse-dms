@@ -89,8 +89,8 @@
           <option value="admin">Admin — full access including users and logs</option>
         </select>
 
-        <div class="temp-pw-box" id="add-result">
-          <p style="font-size:13px;color:var(--text-2);margin:0;font-weight:600;">User created successfully!</p>
+        <div class="temp-pw-box" id="add-result" style="margin-top:4px;margin-bottom:16px;">
+          <p style="font-size:13px;color:#34d399;margin:0;font-weight:600;">User created successfully!</p>
         </div>
 
         <p id="add-error" style="color:#ef4444;font-size:13px;display:none;margin-bottom:12px;"></p>
@@ -242,8 +242,10 @@
       document.getElementById("add-pw").value = "";
       document.getElementById("add-pw2").value = "";
       document.getElementById("add-role").value = "standard";
-      document.getElementById("add-btn").disabled = false;
-      document.getElementById("add-btn").textContent = "Create User";
+      const addBtn = document.getElementById("add-btn");
+      addBtn.disabled = false;
+      addBtn.textContent = "Create User";
+      addBtn.onclick = addUser;
       document.getElementById("add-modal").style.display = "block";
     }
     function closeAddModal() { document.getElementById("add-modal").style.display = "none"; }
@@ -265,7 +267,9 @@
       try {
         await api("invite", { email, full_name, role, password });
         document.getElementById("add-result").style.display = "block";
+        btn.disabled = false;
         btn.textContent = "Done";
+        btn.onclick = closeAddModal;
         await loadUsers();
       } catch (err) {
         errEl.textContent = err.message; errEl.style.display = "block";
