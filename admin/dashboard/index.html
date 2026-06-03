@@ -119,9 +119,12 @@
           }</td>
           <td style="text-align:center;"><span class="badge-views">${doc.views}</span></td>
           <td style="text-align:center;"><span class="badge-dl">${doc.downloads}</span></td>
-          <td onclick="event.stopPropagation()" style="white-space:nowrap;">
-            <button class="btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="copyLink('${doc.slug}',this)">Copy Link</button>
-            <a href="../doc/?slug=${doc.slug}" class="btn-ghost" style="padding:5px 10px;font-size:11px;text-decoration:none;margin-left:4px;">Manage</a>
+          <td onclick="event.stopPropagation()" style="white-space:nowrap;display:flex;gap:4px;align-items:center;padding:13px 20px;">
+            <button class="btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="copyLink('${doc.slug}','${doc.short_code}','${doc.name}',this)">Copy Link</button>
+            <button class="btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="emailLink('${doc.slug}','${doc.short_code}','${doc.name}')" title="Send via email">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </button>
+            <a href="../doc/?slug=${doc.slug}" class="btn-ghost" style="padding:5px 10px;font-size:11px;text-decoration:none;">Manage</a>
           </td>
           <td style="color:var(--text-3);font-size:12px;">${new Date(doc.created_at).toLocaleDateString()}</td>
         </tr>`).join("");
@@ -158,10 +161,27 @@
       }
     }
 
-    function copyLink(slug, btn) {
-      navigator.clipboard.writeText(`${BASE_URL}docs/?slug=${slug}`);
+    function shortUrl(short_code, slug) {
+      // Use Supabase redirect if short_code exists, else fall back to full URL
+      return short_code
+        ? `${SUPABASE_URL}/functions/v1/r/${short_code}`
+        : `${BASE_URL}docs/?slug=${slug}`;
+    }
+
+    function copyLink(slug, short_code, name, btn) {
+      navigator.clipboard.writeText(shortUrl(short_code, slug));
       btn.textContent = "Copied!"; btn.style.color = "#83A8FE";
       setTimeout(() => { btn.textContent = "Copy Link"; btn.style.color = ""; }, 2000);
+    }
+
+    function emailLink(slug, short_code, name) {
+      const link = shortUrl(short_code, slug);
+      const subject = encodeURIComponent(`Document Access: ${name}`);
+      const body = encodeURIComponent(
+        `Hi,\n\nYou've been given access to the following document:\n\n${name}\n\nAccess it here:\n${link}\n\n`
+        + `You'll need the password to view it — reach out if you haven't received it.\n\nBest,\n${session?.user?.email ?? 'Cresta Team'}`
+      );
+      window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
     }
 
     // Passkey
