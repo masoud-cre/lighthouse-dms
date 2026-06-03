@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script>(function(){var t=localStorage.getItem("dms-theme")||"system";document.documentElement.setAttribute("data-theme",t==="dark"||(t==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light");})();</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lighthouse DMS — Login</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Cpath d='M9 8h9l5 5v11a1 1 0 01-1 1H9a1 1 0 01-1-1V9a1 1 0 011-1z' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M18 8v5h5' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cline x1='11' y1='17' x2='21' y2='17' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='11' y1='20' x2='18' y2='20' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E" />
@@ -10,6 +11,7 @@
   <link rel="stylesheet" href="../theme.css" />
   <script src="../theme.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@10/dist/bundle/index.umd.min.js"></script>
   <style>
     body { display: flex; align-items: center; justify-content: center; }
     .login-wrap { width: 100%; max-width: 380px; padding: 24px; }
@@ -45,6 +47,18 @@
       <input id="password" type="password" placeholder="••••••••" class="dms-input" style="margin-bottom:20px;" />
 
       <button id="login-btn" class="btn-primary" style="width:100%;">Sign In</button>
+
+      <div style="display:flex;align-items:center;gap:10px;margin:16px 0;">
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <span style="font-size:12px;color:var(--text-3);">or</span>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+      </div>
+
+      <button id="passkey-login-btn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border-radius:10px;background:var(--bg-subtle);border:1px solid var(--border);color:var(--text-2);font-size:13px;font-weight:500;cursor:pointer;transition:background 0.15s;">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+        Sign in with Passkey
+      </button>
+
       <div class="error" id="error-msg"></div>
     </div>
   </div>
@@ -74,6 +88,68 @@
     document.getElementById("password").addEventListener("keydown", e => {
       if (e.key === "Enter") document.getElementById("login-btn").click();
     });
+
+    document.getElementById("passkey-login-btn").addEventListener("click", async () => {
+      const email  = document.getElementById("email").value.trim();
+      const errEl  = document.getElementById("error-msg");
+      const btn    = document.getElementById("passkey-login-btn");
+      errEl.style.display = "none";
+
+      if (!email) {
+        errEl.textContent = "Enter your email first, then click Sign in with Passkey.";
+        errEl.style.display = "block"; return;
+      }
+      if (typeof SimpleWebAuthnBrowser === "undefined") {
+        errEl.textContent = "WebAuthn not available. Please refresh.";
+        errEl.style.display = "block"; return;
+      }
+
+      btn.disabled = true; btn.querySelector("span") ? null : null;
+      btn.innerHTML = `<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Verifying…`;
+
+      try {
+        // 1. Get auth options
+        const startRes = await fetch(`${SUPABASE_URL}/functions/v1/passkey-auth-start`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": "${SUPABASE_ANON_KEY}" },
+          body: JSON.stringify({ email }),
+        });
+        const startData = await startRes.json();
+        if (!startRes.ok) throw new Error(startData.error);
+
+        const { user_id, ...options } = startData;
+
+        // 2. Trigger authenticator
+        const credential = await SimpleWebAuthnBrowser.startAuthentication(options);
+
+        // 3. Verify + get token
+        const finishRes = await fetch(`${SUPABASE_URL}/functions/v1/passkey-auth-finish`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": "${SUPABASE_ANON_KEY}" },
+          body: JSON.stringify({ credential, user_id }),
+        });
+        const finishData = await finishRes.json();
+        if (!finishRes.ok) throw new Error(finishData.error);
+
+        // 4. Exchange token for session
+        const { error: verifyError } = await sb.auth.verifyOtp({
+          token_hash: finishData.token_hash,
+          type: "magiclink",
+        });
+        if (verifyError) throw verifyError;
+
+        window.location.href = "dashboard/";
+      } catch (err) {
+        errEl.textContent =
+          err.message?.includes("NotAllowedError") || err.message?.includes("cancelled") ? "Passkey authentication was cancelled." :
+          err.message?.includes("No passkey") ? "No passkey registered for this account. Set one up after signing in." :
+          err.message || "Passkey sign-in failed.";
+        errEl.style.display = "block";
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg> Sign in with Passkey`;
+      }
+    });
   </script>
+  <style>.spin{animation:spin 1s linear infinite}@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}</style>
 </body>
 </html>
