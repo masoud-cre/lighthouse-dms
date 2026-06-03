@@ -6,57 +6,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lighthouse DMS — Document</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23304FFE'/%3E%3Cpath d='M9 8h9l5 5v11a1 1 0 01-1 1H9a1 1 0 01-1-1V9a1 1 0 011-1z' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M18 8v5h5' fill='none' stroke='white' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cline x1='11' y1='17' x2='21' y2='17' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='11' y1='20' x2='18' y2='20' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../theme.css" />
+  <script src="../../theme.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { font-family: 'Inter', sans-serif; }
-    .modal-bg { backdrop-filter: blur(4px); }
+    .header-inner { max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between; }
+    main { max-width:1100px;margin:0 auto;padding:36px 24px; }
+    h1 { font-size:22px;font-weight:700;color:var(--text-1);margin:0 0 4px; }
+    .section-label { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-3);margin:0 0 12px; }
+    .stat-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;margin-bottom:24px; }
+    .stat-card { background:var(--bg-subtle);border:1px solid var(--border);border-radius:12px;padding:16px; }
+    .stat-value { font-size:28px;font-weight:700;color:#83A8FE;line-height:1; }
+    .stat-label { font-size:12px;color:var(--text-3);margin-top:4px; }
+    .toggle-switch { position:relative;width:40px;height:22px;cursor:pointer;flex-shrink:0; }
+    .toggle-switch input { opacity:0;width:0;height:0; }
+    .toggle-track { position:absolute;inset:0;background:var(--border);border-radius:22px;transition:background 0.2s; }
+    .toggle-switch input:checked + .toggle-track { background:#304FFE; }
+    .toggle-thumb { position:absolute;top:3px;left:3px;width:16px;height:16px;background:white;border-radius:50%;transition:transform 0.2s; }
+    .toggle-switch input:checked ~ .toggle-thumb { transform:translateX(18px); }
+    .row-label { display:flex;align-items:center;justify-content:space-between;margin-bottom:6px; }
+    .badge { padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600; }
+    .badge-pw { background:rgba(245,158,11,0.12);color:#f59e0b; }
+    .badge-open { background:var(--bg-subtle);color:var(--text-3);border:1px solid var(--border); }
+    .badge-disabled { background:rgba(239,68,68,0.1);color:#ef4444; }
+    .badge-expired { background:rgba(245,158,11,0.1);color:#f59e0b; }
+    .badge-version { background:rgba(131,168,254,0.12);color:#83A8FE; }
+    .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px; }
+    .log-action-view { background:rgba(48,79,254,0.1);color:#83A8FE;border-radius:5px;padding:1px 6px;font-size:11px; }
+    .log-action-download { background:rgba(16,185,129,0.1);color:#34d399;border-radius:5px;padding:1px 6px;font-size:11px; }
   </style>
 </head>
-<body class="bg-[#080810] text-white min-h-screen">
-
-  <!-- Header -->
-  <header class="border-b border-white/8 px-6 py-4">
-    <div class="max-w-6xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 836.49 178.39" class="h-5 w-auto opacity-90" fill="white">
-          <path fill-rule="evenodd" d="M171.73,100.21v-.03c-2.47-2.27-5.61-3.7-9-4.08-6.04-.67-11.87,2.4-15.17,7.5-5.54,8.55-12.16,16.72-19.7,24.27-8.29,8.29-17.38,15.5-26.8,21.31l-1.91,1.16,2.1.84c4.3,1.61,9.11,3.02,14.1,3.81l.92.16.74-.56c7.09-5.09,13.92-10.89,20.29-17.27,8.32-8.32,15.64-17.35,21.73-26.85,0,0,.4-.6,1.04-1.46.71-.96,2.2-.77,2.66.33.24.58.42,1.2.6,1.91,3.93,18.37.83,33.77-8.76,43.35-3.17,3.17-7,5.66-11.39,7.4-4.39,1.73-9.35,2.74-14.74,2.96-6.7.29-13.99-.63-21.54-2.65-8.35-2.15-15.71-5.48-20.78-8.13-12.57-6.43-24.8-15.43-35.66-26.3-11.74-11.74-21.31-25.07-27.8-38.71,6.5-13.64,16.06-26.97,27.8-38.71,10.75-10.75,22.84-19.68,35.27-26.1,5.13-2.7,12.73-6.18,21.4-8.39,7.47-1.99,14.69-2.87,21.32-2.59,5.39.22,10.35,1.23,14.74,2.96,4.39,1.73,8.22,4.22,11.39,7.4,9.58,9.58,12.7,24.98,8.76,43.35-.17.71-.36,1.32-.6,1.9-.45,1.11-1.95,1.29-2.66.33-.64-.87-1.03-1.46-1.03-1.46-6.1-9.49-13.41-18.53-21.73-26.85-6.38-6.38-13.2-12.17-20.29-17.27l-.79-.54-.87.14c-4.98.78-9.79,2.2-14.09,3.81l-2.11.8,1.92,1.2c9.43,5.81,18.51,13.01,26.8,21.31,7.65,7.65,14.36,15.94,19.93,24.63,2.94,4.58,7.92,7.24,13.21,7.24.94,0,1.89-.09,2.84-.26,2.97-.54,5.7-1.9,7.89-3.92,2.36-2.18,3.98-5.04,4.67-8.26,2.36-10.98,2.58-21.25.69-30.54-2.03-9.98-6.43-18.42-13.07-25.05C155.31,5.59,143.2.67,129.03.06c-12.32-.52-26.04,2.23-39.85,8C75.37,2.3,61.64-.46,49.33.06c-14.17.6-26.28,5.53-35,14.26C5.59,23.06.67,35.16.06,49.34c-.52,12.32,2.23,26.04,8,39.86v.02c2.36,5.16,5.25,11.11,8.32,16.56,6.59,11.16,14.95,21.87,24.66,31.58,9.05,9.05,18.99,16.92,29.34,23.29.85.52.66,1.81-.31,2.05-7.06,1.77-13.87,2.56-20.16,2.29-5.39-.22-10.35-1.23-14.74-2.96-4.39-1.73-8.22-4.22-11.39-7.4-3.17-3.17-5.66-7-7.4-11.39-1.73-4.39-2.74-9.35-2.96-14.74-.12-2.94-.05-5.99.28-9.12,0-.07.08-.73.08-.8l-.4-.63c-2.86-4.28-5.67-9.29-8.23-14.27l-1.31-2.58-.77,2.81C.77,112.63-.26,121.14.07,129.05c.6,14.17,5.53,26.28,14.26,35.01,8.73,8.73,20.84,13.66,35,14.26.98.04,1.98.07,2.97.07,11.54,0,24.17-2.76,36.87-8.06,12.71,5.29,25.35,8.06,36.87,8.06.99,0,1.99-.02,2.97-.07,14.17-.6,26.27-5.53,35-14.26,6.63-6.63,11.03-15.06,13.07-25.05,1.89-9.29,1.66-19.57-.69-30.54-.69-3.23-2.3-6.08-4.67-8.26ZM15.69,70.04c-1.78-7.07-2.56-13.88-2.29-20.18.22-5.39,1.23-10.35,2.96-14.74,1.73-4.39,4.22-8.22,7.4-11.39,3.17-3.17,7-5.66,11.39-7.4,4.39-1.73,9.35-2.74,14.74-2.96.8-.03,1.62-.06,2.43-.06,5.61,0,11.58.79,17.75,2.35.97.25,1.17,1.52.31,2.04-10.35,6.37-20.3,14.25-29.36,23.3-9.05,9.05-16.93,19-23.3,29.36-.52.85-1.8.65-2.04-.31h.01Z"/>
-          <path d="M739.56,51.7h-36.13v88.23l-15.15.03V51.72l-36.13-.03v-13.71h87.41v13.71h0ZM536.43,51.7h-59.25v29.06h46.02v13.14h-46.02v32.33h59.25v13.71h-73.95V37.99h73.95v13.7h0ZM321.45,108.69l-.54-.28-.29.54c-6.66,12.57-18.47,20.09-33.1,20.09-22.32,0-38.89-17.12-38.89-40.08s16.57-40.08,38.89-40.08c14.63,0,26.45,7.52,33.1,20.09l.3.52.53-.26,11.72-6.01.57-.3-.3-.54c-8.97-17.03-26.01-27.36-45.92-27.36-29.79,0-53.2,23.26-53.2,53.93s23.41,53.93,53.2,53.93c19.91,0,36.95-10.34,45.92-27.36l.3-.55-.56-.29-11.72-6.01v.02ZM631.2,92.66c-4.9-4.58-11.7-7.72-19.59-9.56l-19.84-4.52-1.16-.27c-5.65-1.4-9.56-3.23-12.06-5.47-2.54-2.28-3.81-5.13-3.81-9.02s2.01-7.75,5.86-10.51c3.9-2.79,9.69-4.58,16.94-4.61,14.95-.06,23,7.6,27.65,18.47l12.41-6.35c-5.29-15.6-18.73-25.78-39.92-25.78s-38.3,12.09-38.3,29.33c0,7.78,3.11,14.1,8.32,18.88,5.14,4.71,12.24,7.86,20.23,9.68l17.38,3.93c6.6,1.51,11.26,3.45,14.22,5.89,2.82,2.32,4.22,5.17,4.22,9.01,0,5.43-2.35,9.71-6.53,12.72-4.27,3.07-10.61,4.92-18.55,4.92-8.54,0-15.11-2.35-20.01-6.09-4.71-3.59-7.41-7.48-10.75-14.34l-12.03,6.16c5.01,15,19.89,27.78,42.8,27.78s40.57-12.52,40.57-31.57c0-7.61-2.94-13.89-8.07-18.68h.02ZM820.45,139.96h16.04l-34.65-92.38c-2.42-6.78-8.61-11.16-15.82-11.16h-.03c-7.22,0-13.41,4.4-15.81,11.2l-34.54,92.33h16.03l8.86-23.5h51.02l8.89,23.5h.01ZM765.62,103.01l19.09-52.81c.48-1.32,2.35-1.32,2.82,0l18.96,52.81h-40.87ZM410.5,99.15c12.17-1.81,27.02-13.18,27.02-30.65s-12.52-30.5-33.79-30.5h-46.16v101.94h14.56v-42.46c0-1.35,1.63-2.01,2.57-1.05l42.46,43.5h18.76l-39.84-40.24c7.21,0,11.44-.15,14.4-.54h.02ZM372.15,51.68h31.59c12.09,0,18.93,6.91,18.93,16.82s-6.84,18.49-18.93,18.49h-31.59v-35.3h0Z"/>
-        </svg>
-        <div class="w-px h-4 bg-white/15"></div>
-        <div class="flex items-center gap-1.5">
-          <div class="w-6 h-6 rounded-md bg-indigo-500/30 border border-indigo-400/40 flex items-center justify-center">
-            <svg class="w-3 h-3 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          </div>
-          <span class="text-xs font-semibold text-white/50 tracking-tight">Lighthouse DMS</span>
+<body>
+  <header class="dms-header">
+    <div class="header-inner">
+      <div class="dms-logo-area">
+        <a href="https://cresta.com/" target="_blank" rel="noopener" class="dms-logo-link"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 836.49 178.39" class="dms-logo-svg" fill="currentColor"><path fill-rule="evenodd" d="M171.73,100.21v-.03c-2.47-2.27-5.61-3.7-9-4.08-6.04-.67-11.87,2.4-15.17,7.5-5.54,8.55-12.16,16.72-19.7,24.27-8.29,8.29-17.38,15.5-26.8,21.31l-1.91,1.16,2.1.84c4.3,1.61,9.11,3.02,14.1,3.81l.92.16.74-.56c7.09-5.09,13.92-10.89,20.29-17.27,8.32-8.32,15.64-17.35,21.73-26.85,0,0,.4-.6,1.04-1.46.71-.96,2.2-.77,2.66.33.24.58.42,1.2.6,1.91,3.93,18.37.83,33.77-8.76,43.35-3.17,3.17-7,5.66-11.39,7.4-4.39,1.73-9.35,2.74-14.74,2.96-6.7.29-13.99-.63-21.54-2.65-8.35-2.15-15.71-5.48-20.78-8.13-12.57-6.43-24.8-15.43-35.66-26.3-11.74-11.74-21.31-25.07-27.8-38.71,6.5-13.64,16.06-26.97,27.8-38.71,10.75-10.75,22.84-19.68,35.27-26.1,5.13-2.7,12.73-6.18,21.4-8.39,7.47-1.99,14.69-2.87,21.32-2.59,5.39.22,10.35,1.23,14.74,2.96,4.39,1.73,8.22,4.22,11.39,7.4,9.58,9.58,12.7,24.98,8.76,43.35-.17.71-.36,1.32-.6,1.9-.45,1.11-1.95,1.29-2.66.33-.64-.87-1.03-1.46-1.03-1.46-6.1-9.49-13.41-18.53-21.73-26.85-6.38-6.38-13.2-12.17-20.29-17.27l-.79-.54-.87.14c-4.98.78-9.79,2.2-14.09,3.81l-2.11.8,1.92,1.2c9.43,5.81,18.51,13.01,26.8,21.31,7.65,7.65,14.36,15.94,19.93,24.63,2.94,4.58,7.92,7.24,13.21,7.24.94,0,1.89-.09,2.84-.26,2.97-.54,5.7-1.9,7.89-3.92,2.36-2.18,3.98-5.04,4.67-8.26,2.36-10.98,2.58-21.25.69-30.54-2.03-9.98-6.43-18.42-13.07-25.05C155.31,5.59,143.2.67,129.03.06c-12.32-.52-26.04,2.23-39.85,8C75.37,2.3,61.64-.46,49.33.06c-14.17.6-26.28,5.53-35,14.26C5.59,23.06.67,35.16.06,49.34c-.52,12.32,2.23,26.04,8,39.86v.02c2.36,5.16,5.25,11.11,8.32,16.56,6.59,11.16,14.95,21.87,24.66,31.58,9.05,9.05,18.99,16.92,29.34,23.29.85.52.66,1.81-.31,2.05-7.06,1.77-13.87,2.56-20.16,2.29-5.39-.22-10.35-1.23-14.74-2.96-4.39-1.73-8.22-4.22-11.39-7.4-3.17-3.17-5.66-7-7.4-11.39-1.73-4.39-2.74-9.35-2.96-14.74-.12-2.94-.05-5.99.28-9.12,0-.07.08-.73.08-.8l-.4-.63c-2.86-4.28-5.67-9.29-8.23-14.27l-1.31-2.58-.77,2.81C.77,112.63-.26,121.14.07,129.05c.6,14.17,5.53,26.28,14.26,35.01,8.73,8.73,20.84,13.66,35,14.26.98.04,1.98.07,2.97.07,11.54,0,24.17-2.76,36.87-8.06,12.71,5.29,25.35,8.06,36.87,8.06.99,0,1.99-.02,2.97-.07,14.17-.6,26.27-5.53,35-14.26,6.63-6.63,11.03-15.06,13.07-25.05,1.89-9.29,1.66-19.57-.69-30.54-.69-3.23-2.3-6.08-4.67-8.26ZM15.69,70.04c-1.78-7.07-2.56-13.88-2.29-20.18.22-5.39,1.23-10.35,2.96-14.74,1.73-4.39,4.22-8.22,7.4-11.39,3.17-3.17,7-5.66,11.39-7.4,4.39-1.73,9.35-2.74,14.74-2.96.8-.03,1.62-.06,2.43-.06,5.61,0,11.58.79,17.75,2.35.97.25,1.17,1.52.31,2.04-10.35,6.37-20.3,14.25-29.36,23.3-9.05,9.05-16.93,19-23.3,29.36-.52.85-1.8.65-2.04-.31h.01Z"/><path d="M739.56,51.7h-36.13v88.23l-15.15.03V51.72l-36.13-.03v-13.71h87.41v13.71h0ZM536.43,51.7h-59.25v29.06h46.02v13.14h-46.02v32.33h59.25v13.71h-73.95V37.99h73.95v13.7h0ZM321.45,108.69l-.54-.28-.29.54c-6.66,12.57-18.47,20.09-33.1,20.09-22.32,0-38.89-17.12-38.89-40.08s16.57-40.08,38.89-40.08c14.63,0,26.45,7.52,33.1,20.09l.3.52.53-.26,11.72-6.01.57-.3-.3-.54c-8.97-17.03-26.01-27.36-45.92-27.36-29.79,0-53.2,23.26-53.2,53.93s23.41,53.93,53.2,53.93c19.91,0,36.95-10.34,45.92-27.36l.3-.55-.56-.29-11.72-6.01v.02ZM631.2,92.66c-4.9-4.58-11.7-7.72-19.59-9.56l-19.84-4.52-1.16-.27c-5.65-1.4-9.56-3.23-12.06-5.47-2.54-2.28-3.81-5.13-3.81-9.02s2.01-7.75,5.86-10.51c3.9-2.79,9.69-4.58,16.94-4.61,14.95-.06,23,7.6,27.65,18.47l12.41-6.35c-5.29-15.6-18.73-25.78-39.92-25.78s-38.3,12.09-38.3,29.33c0,7.78,3.11,14.1,8.32,18.88,5.14,4.71,12.24,7.86,20.23,9.68l17.38,3.93c6.6,1.51,11.26,3.45,14.22,5.89,2.82,2.32,4.22,5.17,4.22,9.01,0,5.43-2.35,9.71-6.53,12.72-4.27,3.07-10.61,4.92-18.55,4.92-8.54,0-15.11-2.35-20.01-6.09-4.71-3.59-7.41-7.48-10.75-14.34l-12.03,6.16c5.01,15,19.89,27.78,42.8,27.78s40.57-12.52,40.57-31.57c0-7.61-2.94-13.89-8.07-18.68h.02ZM820.45,139.96h16.04l-34.65-92.38c-2.42-6.78-8.61-11.16-15.82-11.16h-.03c-7.22,0-13.41,4.4-15.81,11.2l-34.54,92.33h16.03l8.86-23.5h51.02l8.89,23.5h.01ZM765.62,103.01l19.09-52.81c.48-1.32,2.35-1.32,2.82,0l18.96,52.81h-40.87ZM410.5,99.15c12.17-1.81,27.02-13.18,27.02-30.65s-12.52-30.5-33.79-30.5h-46.16v101.94h14.56v-42.46c0-1.35,1.63-2.01,2.57-1.05l42.46,43.5h18.76l-39.84-40.24c7.21,0,11.44-.15,14.4-.54h.02ZM372.15,51.68h31.59c12.09,0,18.93,6.91,18.93,16.82s-6.84,18.49-18.93,18.49h-31.59v-35.3h0Z"/></svg></a>
+        <div class="dms-divider"></div>
+        <div class="dms-product">
+          <div class="dms-product-icon"><svg width="12" height="12" fill="none" stroke="#83A8FE" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+          <span class="dms-product-label">Lighthouse DMS</span>
         </div>
       </div>
-      <a href="../dashboard/" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white text-xs font-medium transition-all">← Dashboard</a>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button id="theme-btn" class="btn-icon" onclick="cycleTheme()"></button>
+        <a href="../dashboard/" class="btn-ghost">← Dashboard</a>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-6 py-10" id="main">
-    <div class="text-white/30 text-sm">Loading...</div>
-  </main>
+  <main id="main"><p style="color:var(--text-3);">Loading…</p></main>
 
-  <!-- Admin password confirmation modal -->
-  <div id="modal" class="hidden fixed inset-0 bg-black/60 modal-bg flex items-center justify-center z-50 px-4">
-    <div class="bg-[#12121f] border border-white/10 rounded-2xl p-6 w-full max-w-sm">
-      <h3 class="text-base font-bold text-white mb-1" id="modal-title">Confirm Identity</h3>
-      <p class="text-white/40 text-sm mb-5" id="modal-desc">Enter your admin password to continue.</p>
-      <label class="block text-xs font-medium text-white/50 mb-2 uppercase tracking-wide">Your Admin Password</label>
-      <input type="password" id="modal-pw" placeholder="••••••••"
-        class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 text-sm outline-none focus:border-indigo-500/60 transition-all mb-4" />
-      <div id="modal-new-pw-wrap" class="hidden mb-4">
-        <label class="block text-xs font-medium text-white/50 mb-2 uppercase tracking-wide">New Password</label>
-        <input type="text" id="modal-new-pw" placeholder="New recipient password"
-          class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 text-sm outline-none focus:border-indigo-500/60 transition-all" />
+  <!-- Password modal -->
+  <div id="pw-modal" style="display:none;position:fixed;inset:0;z-index:100;">
+    <div class="modal-overlay" onclick="if(event.target===this)closePwModal()">
+      <div class="dms-modal">
+        <h3 style="font-size:16px;font-weight:700;color:var(--text-1);margin:0 0 4px;" id="pw-modal-title">Change Password</h3>
+        <p style="font-size:13px;color:var(--text-3);margin:0 0 20px;" id="pw-modal-desc">Confirm with your admin password to update.</p>
+        <label class="dms-label">Your Admin Password</label>
+        <input type="password" id="pw-modal-admin" class="dms-input" placeholder="••••••••" style="margin-bottom:12px;" />
+        <div id="pw-modal-new-wrap">
+          <label class="dms-label">New Recipient Password</label>
+          <input type="text" id="pw-modal-new" class="dms-input" placeholder="New password…" style="margin-bottom:20px;" />
+        </div>
+        <p id="pw-modal-error" style="color:#ef4444;font-size:13px;margin-bottom:12px;display:none;"></p>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-ghost" style="flex:1;" onclick="closePwModal()">Cancel</button>
+          <button class="btn-primary" id="pw-modal-confirm" style="flex:1;" onclick="confirmPwModal()">Confirm</button>
+        </div>
       </div>
-      <p id="modal-error" class="text-red-400 text-xs mb-4 hidden"></p>
-      <div class="flex gap-3">
-        <button id="modal-cancel" class="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white text-sm font-medium transition-all">Cancel</button>
-        <button id="modal-confirm" class="flex-1 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-all disabled:opacity-50">Confirm</button>
+    </div>
+  </div>
+
+  <!-- Version upload modal -->
+  <div id="version-modal" style="display:none;position:fixed;inset:0;z-index:100;">
+    <div class="modal-overlay" onclick="if(event.target===this)closeVersionModal()">
+      <div class="dms-modal">
+        <h3 style="font-size:16px;font-weight:700;color:var(--text-1);margin:0 0 4px;">Upload New Version</h3>
+        <p style="font-size:13px;color:var(--text-3);margin:0 0 20px;">The share link stays the same. The file will be replaced.</p>
+        <div id="version-drop" style="border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;margin-bottom:16px;transition:border-color 0.15s;" onclick="document.getElementById('version-file').click()">
+          <input type="file" id="version-file" style="display:none;" accept=".pdf,.ppt,.pptx,.doc,.docx,.mp4,.jpg,.jpeg,.png" onchange="versionFileSelected(this)" />
+          <svg width="24" height="24" fill="none" stroke="#83A8FE" stroke-width="2" viewBox="0 0 24 24" style="margin:0 auto 8px;display:block;"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          <p id="version-file-name" style="font-size:13px;color:var(--text-3);margin:0;">Click to select file</p>
+        </div>
+        <p id="version-error" style="color:#ef4444;font-size:13px;margin-bottom:12px;display:none;"></p>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-ghost" style="flex:1;" onclick="closeVersionModal()">Cancel</button>
+          <button class="btn-primary" id="version-btn" style="flex:1;" onclick="uploadVersion()">Upload Version</button>
+        </div>
       </div>
     </div>
   </div>
@@ -65,127 +103,226 @@
     const SUPABASE_URL = "https://yuwvruokfrbizjiyobrx.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1d3ZydW9rZnJiaXpqaXlvYnJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MjEzNTYsImV4cCI6MjA5NTk5NzM1Nn0.gLH11eXQVoxfdHovVMuWgG9ydYxPPu3bI2Ony2MmUsc";
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const BASE_URL = window.location.origin + window.location.pathname.replace("admin/doc/", "");
     const slug = new URLSearchParams(window.location.search).get("slug");
-
-    let currentAction = null; // 'remove' or 'change'
-    let docHasPassword = false;
     let session = null;
+    let docData  = null;
+    let currentPwAction = null;
+    let versionFile = null;
 
     async function init() {
       const { data: { session: s } } = await sb.auth.getSession();
       if (!s) { window.location.href = "../../admin/"; return; }
       session = s;
+      if (!slug) { document.getElementById("main").innerHTML = `<p style="color:#ef4444;">No document slug provided.</p>`; return; }
+      await loadDoc();
+    }
 
-      // Fetch doc analytics
+    async function loadDoc() {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/get-analytics?slug=${slug}`, {
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
       const data = await res.json();
-      if (!res.ok || !data.doc) { document.getElementById("main").innerHTML = `<p class="text-red-400">Document not found.</p>`; return; }
-
-      docHasPassword = data.has_password;
+      if (!res.ok || !data.doc) {
+        document.getElementById("main").innerHTML = `<p style="color:#ef4444;">Document not found.</p>`;
+        return;
+      }
+      docData = data;
       renderPage(data);
     }
 
     function renderPage(data) {
-      const BASE_URL_DOCS = `${BASE_URL}docs/?slug=${slug}`;
+      const expired  = data.expires_at && new Date(data.expires_at) < new Date();
+      const expiresFmt = data.expires_at ? new Date(data.expires_at).toLocaleDateString() : "";
+
       document.getElementById("main").innerHTML = `
-        <div class="flex items-start justify-between flex-wrap gap-4 mb-10">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:28px;">
           <div>
-            <h1 class="text-2xl font-bold text-white mb-1">${data.doc}</h1>
-            <div class="flex items-center gap-2 mt-2">
-              ${data.has_password
-                ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-300 text-xs font-medium"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Password protected</span>`
-                : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/5 text-white/40 text-xs font-medium"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>No password</span>`
-              }
+            <h1>${data.doc}</h1>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+              ${data.has_password ? `<span class="badge badge-pw">Password protected</span>` : `<span class="badge badge-open">No password</span>`}
+              ${!data.is_active   ? `<span class="badge badge-disabled">Link disabled</span>` : ''}
+              ${expired           ? `<span class="badge badge-expired">Expired</span>` : ''}
+              ${data.version_number > 1 ? `<span class="badge badge-version">v${data.version_number}</span>` : ''}
+              ${(data.tags??[]).map(t=>`<span class="badge badge-open">${t}</span>`).join('')}
             </div>
           </div>
-          <div class="flex gap-3 flex-wrap">
-            <button onclick="copyLink()" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white text-xs font-medium transition-all" id="copy-btn">Copy Link</button>
-            <button onclick="openModal('change')" class="px-4 py-2 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-300 text-xs font-medium transition-all">
-              ${data.has_password ? 'Change Password' : 'Add Password'}
-            </button>
-            ${data.has_password ? `<button onclick="openModal('remove')" class="px-4 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-medium transition-all">Remove Password</button>` : ''}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-ghost" id="copy-btn" onclick="copyLink()">Copy Link</button>
+            <button class="btn-ghost" onclick="openVersionModal()">Upload New Version</button>
           </div>
         </div>
 
-        <!-- Stats -->
-        <div class="grid grid-cols-2 gap-4 mb-10 max-w-sm">
-          <div class="bg-white/3 border border-white/8 rounded-xl p-5">
-            <p class="text-white/40 text-xs mb-1">Total Views</p>
-            <p class="text-3xl font-bold text-indigo-300">${data.views}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;">
+
+          <!-- Left column: Stats + Access Log -->
+          <div>
+            <p class="section-label">Analytics</p>
+            <div class="stat-grid" style="grid-template-columns:1fr 1fr;margin-bottom:24px;">
+              <div class="stat-card"><div class="stat-value">${data.views}</div><div class="stat-label">Views</div></div>
+              <div class="stat-card"><div class="stat-value" style="color:#34d399;">${data.downloads}</div><div class="stat-label">Downloads</div></div>
+            </div>
+
+            <p class="section-label">Access Log</p>
+            <div class="dms-card" style="padding:0;overflow:hidden;">
+              ${data.logs && data.logs.length > 0 ? `
+                <div class="dms-table-wrap"><table class="dms-table">
+                  <thead><tr><th>Action</th><th>Time</th><th>IP</th></tr></thead>
+                  <tbody>
+                    ${data.logs.map(l => `
+                      <tr>
+                        <td><span class="log-action-${l.action}">${l.action}</span></td>
+                        <td style="font-size:12px;color:var(--text-2);">${new Date(l.accessed_at).toLocaleString()}</td>
+                        <td style="font-size:11px;color:var(--text-3);font-family:monospace;">${l.ip_address||'—'}</td>
+                      </tr>`).join('')}
+                  </tbody>
+                </table></div>` : `<p style="padding:24px;text-align:center;color:var(--text-3);font-size:13px;margin:0;">No access events yet</p>`}
+            </div>
           </div>
-          <div class="bg-white/3 border border-white/8 rounded-xl p-5">
-            <p class="text-white/40 text-xs mb-1">Downloads</p>
-            <p class="text-3xl font-bold text-emerald-300">${data.downloads}</p>
+
+          <!-- Right column: Edit + Access Control + Password -->
+          <div style="display:flex;flex-direction:column;gap:20px;">
+
+            <!-- Edit Details -->
+            <div class="dms-card" style="padding:20px;">
+              <p class="section-label">Document Details</p>
+              <label class="dms-label">Name</label>
+              <input id="edit-name" type="text" class="dms-input" value="${escHtml(data.doc)}" style="margin-bottom:10px;" />
+              <label class="dms-label">Description</label>
+              <textarea id="edit-desc" class="dms-input" rows="2" style="resize:none;margin-bottom:10px;">${escHtml(data.description||'')}</textarea>
+              <label class="dms-label">Tags <span style="font-weight:400;color:var(--text-3);">(comma-separated)</span></label>
+              <input id="edit-tags" type="text" class="dms-input" value="${(data.tags||[]).join(', ')}" style="margin-bottom:14px;" />
+              <button class="btn-primary" style="width:100%;" onclick="saveDetails()">Save Details</button>
+              <p id="details-msg" style="font-size:12px;margin-top:8px;display:none;"></p>
+            </div>
+
+            <!-- Access Control -->
+            <div class="dms-card" style="padding:20px;">
+              <p class="section-label">Access Control</p>
+
+              <div class="row-label">
+                <label class="dms-label" style="margin:0;">Link Active</label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="is-active-toggle" ${data.is_active?'checked':''} onchange="toggleActive(this)" />
+                  <div class="toggle-track"></div>
+                  <div class="toggle-thumb"></div>
+                </label>
+              </div>
+              <p style="font-size:12px;color:var(--text-3);margin:0 0 14px;">Disable to block all recipient access without deleting the document.</p>
+
+              <label class="dms-label">Expiry Date <span style="font-weight:400;">(leave blank = no expiry)</span></label>
+              <input id="expires-input" type="date" class="dms-input" value="${data.expires_at ? data.expires_at.slice(0,10) : ''}" style="margin-bottom:10px;" />
+
+              <label class="dms-label">Max Views <span style="font-weight:400;">(leave blank = unlimited)</span></label>
+              <input id="max-views-input" type="number" class="dms-input" min="1" value="${data.max_views ?? ''}" placeholder="e.g. 10" style="margin-bottom:14px;" />
+
+              <button class="btn-primary" style="width:100%;" onclick="saveAccessControl()">Save Access Control</button>
+              <p id="access-msg" style="font-size:12px;margin-top:8px;display:none;"></p>
+            </div>
+
+            <!-- Password -->
+            <div class="dms-card" style="padding:20px;">
+              <p class="section-label">Recipient Password</p>
+              <p style="font-size:13px;color:var(--text-3);margin:0 0 14px;">${data.has_password ? 'This document is password-protected.' : 'No password — anyone with the link can view.'}</p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn-ghost" style="font-size:12px;" onclick="openPwModal('change')">${data.has_password ? 'Change Password' : 'Add Password'}</button>
+                ${data.has_password ? `<button class="btn-ghost" style="font-size:12px;color:#ef4444;" onclick="openPwModal('remove')">Remove Password</button>` : ''}
+              </div>
+            </div>
+
           </div>
         </div>
-
-        <!-- Access log -->
-        <h2 class="text-sm font-semibold text-white/60 uppercase tracking-wide mb-4"><span class="btn-label">Access Log</span></h2>
-        ${data.logs && data.logs.length > 0 ? `
-          <div class="bg-white/3 border border-white/8 rounded-2xl overflow-hidden">
-            <table class="w-full">
-              <thead><tr class="border-b border-white/8">
-                <th class="text-left px-6 py-3 text-xs font-medium text-white/30 uppercase tracking-wide">Action</th>
-                <th class="text-left px-6 py-3 text-xs font-medium text-white/30 uppercase tracking-wide">Time</th>
-                <th class="text-left px-6 py-3 text-xs font-medium text-white/30 uppercase tracking-wide">IP</th>
-              </tr></thead>
-              <tbody>
-                ${data.logs.map((log, i) => `
-                  <tr class="${i < data.logs.length - 1 ? 'border-b border-white/5' : ''}">
-                    <td class="px-6 py-3">
-                      <span class="px-2 py-1 rounded-md text-xs font-medium ${log.action === 'download' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-indigo-500/10 text-indigo-300'}">${log.action}</span>
-                    </td>
-                    <td class="px-6 py-3 text-xs text-white/40">${new Date(log.accessed_at).toLocaleString()}</td>
-                    <td class="px-6 py-3 text-xs text-white/30 font-mono">${log.ip_address}</td>
-                  </tr>`).join("")}
-              </tbody>
-            </table>
-          </div>` : `<div class="border border-white/8 border-dashed rounded-2xl p-10 text-center text-white/20 text-sm">No access events yet</div>`}
       `;
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     function copyLink() {
       const btn = document.getElementById("copy-btn");
-      navigator.clipboard.writeText(`${BASE_URL}docs/?slug=${slug}`);
+      navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname.replace("admin/doc/","docs/")}?slug=${slug}`);
       btn.textContent = "Copied!";
       setTimeout(() => btn.textContent = "Copy Link", 2000);
     }
 
-    function openModal(action) {
-      currentAction = action;
-      const modal = document.getElementById("modal");
-      const newPwWrap = document.getElementById("modal-new-pw-wrap");
-      document.getElementById("modal-title").textContent = action === 'remove' ? 'Remove Password' : (docHasPassword ? 'Change Password' : 'Add Password');
-      document.getElementById("modal-desc").textContent = action === 'remove'
-        ? 'This will make the document publicly accessible. Confirm with your admin password.'
-        : 'Confirm with your admin password to update the recipient password.';
-      newPwWrap.classList.toggle("hidden", action === 'remove');
-      document.getElementById("modal-pw").value = "";
-      document.getElementById("modal-new-pw").value = "";
-      document.getElementById("modal-error").classList.add("hidden");
-      modal.classList.remove("hidden");
+    async function saveDetails() {
+      const name  = document.getElementById("edit-name").value.trim();
+      const desc  = document.getElementById("edit-desc").value.trim();
+      const tagsRaw = document.getElementById("edit-tags").value.trim();
+      const tags  = tagsRaw ? tagsRaw.split(",").map(t=>t.trim()).filter(Boolean) : [];
+      const msg   = document.getElementById("details-msg");
+      if (!name) { showMsg(msg, "Name is required.", false); return; }
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/update-doc`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, name, description: desc, tags }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showMsg(msg, data.error, false); return; }
+      showMsg(msg, "Saved!", true);
+      docData.doc  = name;
+      docData.tags = tags;
     }
 
-    document.getElementById("modal-cancel").addEventListener("click", () => {
-      document.getElementById("modal").classList.add("hidden");
-    });
+    async function toggleActive(checkbox) {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/update-doc`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, is_active: checkbox.checked }),
+      });
+      if (!res.ok) { checkbox.checked = !checkbox.checked; alert("Failed to update."); }
+    }
 
-    document.getElementById("modal-confirm").addEventListener("click", async () => {
-      const adminPw = document.getElementById("modal-pw").value;
-      const newPw = currentAction === 'remove' ? null : document.getElementById("modal-new-pw").value;
-      const errEl = document.getElementById("modal-error");
-      const btn = document.getElementById("modal-confirm");
+    async function saveAccessControl() {
+      const expiresVal  = document.getElementById("expires-input").value;
+      const maxViewsVal = document.getElementById("max-views-input").value;
+      const msg = document.getElementById("access-msg");
+      const body = {
+        slug,
+        expires_at: expiresVal ? new Date(expiresVal).toISOString() : null,
+        max_views:  maxViewsVal ? parseInt(maxViewsVal) : null,
+      };
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/update-doc`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) { showMsg(msg, data.error, false); return; }
+      showMsg(msg, "Saved!", true);
+    }
 
-      if (!adminPw) { errEl.textContent = "Admin password required."; errEl.classList.remove("hidden"); return; }
-      if (currentAction === 'change' && !newPw) { errEl.textContent = "New password required."; errEl.classList.remove("hidden"); return; }
+    function showMsg(el, text, ok) {
+      el.textContent  = text;
+      el.style.color  = ok ? "#34d399" : "#ef4444";
+      el.style.display = "block";
+      if (ok) setTimeout(() => el.style.display = "none", 3000);
+    }
 
-      btn.disabled = true;
-      btn.textContent = "Confirming...";
-      errEl.classList.add("hidden");
+    // ── Password modal ────────────────────────────────────────────────────────
+    function openPwModal(action) {
+      currentPwAction = action;
+      document.getElementById("pw-modal-title").textContent = action === "remove" ? "Remove Password" : (docData.has_password ? "Change Password" : "Add Password");
+      document.getElementById("pw-modal-desc").textContent  = action === "remove"
+        ? "This will make the document publicly accessible. Confirm with your admin password."
+        : "Confirm with your admin password to update the recipient password.";
+      document.getElementById("pw-modal-new-wrap").style.display = action === "remove" ? "none" : "block";
+      document.getElementById("pw-modal-admin").value = "";
+      document.getElementById("pw-modal-new").value   = "";
+      document.getElementById("pw-modal-error").style.display = "none";
+      document.getElementById("pw-modal").style.display = "block";
+    }
+    function closePwModal() { document.getElementById("pw-modal").style.display = "none"; }
 
+    async function confirmPwModal() {
+      const adminPw = document.getElementById("pw-modal-admin").value;
+      const newPw   = currentPwAction === "remove" ? null : document.getElementById("pw-modal-new").value;
+      const errEl   = document.getElementById("pw-modal-error");
+      const btn     = document.getElementById("pw-modal-confirm");
+      if (!adminPw) { errEl.textContent="Admin password required."; errEl.style.display="block"; return; }
+      if (currentPwAction === "change" && !newPw) { errEl.textContent="New password required."; errEl.style.display="block"; return; }
+      btn.disabled = true; btn.textContent = "Confirming…";
+      errEl.style.display = "none";
       try {
         const res = await fetch(`${SUPABASE_URL}/functions/v1/update-doc-password`, {
           method: "POST",
@@ -194,23 +331,61 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
-
-        document.getElementById("modal").classList.add("hidden");
-        docHasPassword = data.has_password;
-        // Reload page data
-        init();
+        closePwModal();
+        await loadDoc();
       } catch (err) {
-        errEl.textContent = err.message;
-        errEl.classList.remove("hidden");
+        errEl.textContent = err.message; errEl.style.display = "block";
       } finally {
-        btn.disabled = false;
-        btn.textContent = "Confirm";
+        btn.disabled = false; btn.textContent = "Confirm";
       }
-    });
+    }
 
-    document.getElementById("modal-pw").addEventListener("keydown", e => {
-      if (e.key === "Enter") document.getElementById("modal-confirm").click();
-    });
+    document.getElementById("pw-modal-admin").addEventListener("keydown", e => { if (e.key==="Enter") document.getElementById("pw-modal-confirm").click(); });
+
+    // ── Version upload modal ──────────────────────────────────────────────────
+    function openVersionModal() {
+      versionFile = null;
+      document.getElementById("version-file-name").textContent = "Click to select file";
+      document.getElementById("version-drop").style.borderColor = "var(--border)";
+      document.getElementById("version-error").style.display = "none";
+      document.getElementById("version-btn").disabled = false;
+      document.getElementById("version-btn").textContent = "Upload Version";
+      document.getElementById("version-modal").style.display = "block";
+    }
+    function closeVersionModal() { document.getElementById("version-modal").style.display = "none"; }
+
+    function versionFileSelected(input) {
+      versionFile = input.files[0];
+      if (versionFile) {
+        document.getElementById("version-file-name").textContent = `✓ ${versionFile.name} (${(versionFile.size/1024/1024).toFixed(1)} MB)`;
+        document.getElementById("version-file-name").style.color = "#83A8FE";
+        document.getElementById("version-drop").style.borderColor = "#304FFE";
+      }
+    }
+
+    async function uploadVersion() {
+      if (!versionFile) { document.getElementById("version-error").textContent="Please select a file."; document.getElementById("version-error").style.display="block"; return; }
+      const btn = document.getElementById("version-btn");
+      btn.disabled = true; btn.textContent = "Uploading…";
+      const form = new FormData();
+      form.append("file", versionFile);
+      form.append("replace_slug", slug);
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/upload-doc`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          body: form,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        closeVersionModal();
+        await loadDoc();
+      } catch (err) {
+        document.getElementById("version-error").textContent = err.message;
+        document.getElementById("version-error").style.display = "block";
+        btn.disabled = false; btn.textContent = "Upload Version";
+      }
+    }
 
     init();
   </script>
