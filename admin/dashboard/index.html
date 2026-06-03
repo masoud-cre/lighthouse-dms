@@ -36,7 +36,7 @@
     }
     .mobile-menu-panel {
       position:absolute; top:0; right:0; bottom:0; width:min(280px, 85vw);
-      background:var(--bg-card);
+      background:#ffffff;
       border-left:1px solid var(--border);
       display:flex; flex-direction:column;
       padding:20px 16px;
@@ -44,6 +44,7 @@
       overflow-y:auto;
       box-shadow:-8px 0 32px rgba(0,0,0,0.2);
     }
+    [data-theme="dark"] .mobile-menu-panel { background:#1e1240; }
     .menu-header {
       display:flex; align-items:center; justify-content:space-between;
       padding-bottom:16px; margin-bottom:8px;
