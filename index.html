@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lighthouse DMS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    * { font-family: 'Inter', sans-serif; }
+
+    @keyframes letterReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(24px);
+        filter: blur(12px);
+        color: #6b7280;
+      }
+      60% {
+        opacity: 0.8;
+        transform: translateY(-2px);
+        filter: blur(2px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+        color: inherit;
+      }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .letter {
+      display: inline-block;
+      opacity: 0;
+      animation: letterReveal 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 40%, #818cf8 70%, #ffffff 100%);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 6s ease infinite;
+    }
+
+    .fade-up {
+      opacity: 0;
+      animation: fadeUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: fadeUp 1.5s ease forwards;
+    }
+  </style>
+</head>
+<body class="bg-[#080810] text-white min-h-screen overflow-x-hidden">
+
+  <!-- Noise overlay -->
+  <div class="noise"></div>
+
+  <!-- Background orbs -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="glow-orb w-[600px] h-[600px] bg-indigo-600/20 top-[-200px] left-[-100px]"></div>
+    <div class="glow-orb w-[500px] h-[500px] bg-violet-600/15 top-[100px] right-[-150px]" style="animation-delay:0.3s"></div>
+    <div class="glow-orb w-[400px] h-[400px] bg-blue-600/10 bottom-[-100px] left-[30%]" style="animation-delay:0.6s"></div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="relative z-10 flex items-center justify-between px-8 py-6 max-w-6xl mx-auto fade-up" style="animation-delay:0.1s">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-lg bg-indigo-500/30 border border-indigo-400/40 flex items-center justify-center">
+        <svg class="w-4 h-4 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <span class="text-sm font-semibold text-white/80 tracking-tight">Lighthouse DMS</span>
+    </div>
+    <a href="admin/" class="text-sm font-medium text-white/50 hover:text-white transition-colors duration-200">
+      Team Login →
+    </a>
+  </nav>
+
+  <!-- Hero -->
+  <main class="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-24 pb-32 max-w-5xl mx-auto">
+
+    <!-- Eyebrow -->
+    <div class="fade-up mb-8" style="animation-delay:0.2s">
+      <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 tracking-wide uppercase">
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+        Secure Document Sharing
+      </span>
+    </div>
+
+    <!-- Animated H3 heading -->
+    <h3 id="hero-heading"
+      class="gradient-text font-black tracking-tighter leading-none mb-6
+             text-5xl sm:text-6xl md:text-7xl lg:text-8xl">
+    </h3>
+
+    <!-- Subheading -->
+    <p class="fade-up text-white/40 text-lg sm:text-xl font-light max-w-xl leading-relaxed mb-12" style="animation-delay:1.4s">
+      Upload once. Share securely. Track every view and download — all behind a password-protected link.
+    </p>
+
+    <!-- CTAs -->
+    <div class="fade-up flex flex-col sm:flex-row items-center gap-4" style="animation-delay:1.6s">
+      <a href="admin/"
+         class="px-6 py-3 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5">
+        Team Login
+      </a>
+      <a href="docs/"
+         class="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white text-sm font-medium transition-all duration-200">
+        Access a Document
+      </a>
+    </div>
+
+    <!-- Feature pills -->
+    <div class="fade-up flex flex-wrap items-center justify-center gap-3 mt-20" style="animation-delay:1.8s">
+      {["Private storage", "bcrypt passwords", "15-min signed URLs", "Access analytics", "Rate limited"].map(f => `
+        <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/8 text-white/40 text-xs font-medium">${f}</span>
+      `)}
+    </div>
+  </main>
+
+  <script>
+    // Per-letter animated heading
+    const text = "Share docs.\nNot passwords.";
+    const heading = document.getElementById("hero-heading");
+
+    let letterIndex = 0;
+    const baseDelay = 0.4;
+    const letterDelay = 0.045;
+
+    text.split("").forEach((char, i) => {
+      if (char === "\n") {
+        heading.appendChild(document.createElement("br"));
+        return;
+      }
+      const span = document.createElement("span");
+      span.className = "letter";
+      span.textContent = char === " " ? " " : char;
+      span.style.animationDelay = `${baseDelay + letterIndex * letterDelay}s`;
+      heading.appendChild(span);
+      letterIndex++;
+    });
+
+    // Feature pills - replace template literal in HTML
+    document.querySelectorAll("main .flex.flex-wrap span").forEach(el => {
+      if (el.textContent.includes("${f}")) el.remove();
+    });
+
+    const features = ["Private storage", "bcrypt passwords", "15-min signed URLs", "Access analytics", "Rate limited"];
+    const pillContainer = document.querySelector(".flex.flex-wrap.items-center.justify-center");
+    pillContainer.innerHTML = "";
+    features.forEach(f => {
+      const span = document.createElement("span");
+      span.className = "px-3 py-1.5 rounded-lg bg-white/5 border border-white/[0.08] text-white/40 text-xs font-medium";
+      span.textContent = f;
+      pillContainer.appendChild(span);
+    });
+  </script>
+</body>
+</html>
