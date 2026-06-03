@@ -67,21 +67,31 @@
   <!-- Passkey modal -->
   <div id="passkey-modal" class="passkey-modal" style="position:fixed;inset:0;z-index:100;display:none;">
     <div class="dms-modal-backdrop" onclick="if(event.target===this)closePasskeyModal()">
-      <div class="dms-modal">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-          <div style="width:40px;height:40px;background:rgba(48,79,254,0.15);border:1px solid rgba(48,79,254,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+      <div class="dms-modal" style="max-width:440px;">
+        <!-- Header -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <div style="width:40px;height:40px;background:rgba(48,79,254,0.15);border:1px solid rgba(48,79,254,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <svg width="20" height="20" fill="none" stroke="#83A8FE" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
           </div>
           <div>
-            <h3 style="font-size:16px;font-weight:700;color:var(--text-1);margin:0 0 2px;">Set Up Passkey</h3>
-            <p style="font-size:13px;color:var(--text-3);margin:0;">Use Face ID, Touch ID, or a hardware key to sign in.</p>
+            <h3 style="font-size:16px;font-weight:700;color:var(--text-1);margin:0 0 2px;">Passkey Management</h3>
+            <p style="font-size:13px;color:var(--text-3);margin:0;">Sign in with Face ID, Touch ID, or a hardware key.</p>
           </div>
         </div>
-        <p style="font-size:13px;color:var(--text-2);margin:0 0 20px;line-height:1.6;">Your device will prompt you to authenticate. This creates a passkey tied to your account — no password needed next time.</p>
-        <div id="passkey-status" class="passkey-status" style="display:none;"></div>
-        <div style="display:flex;gap:10px;margin-top:4px;">
-          <button class="btn-ghost" style="flex:1;" onclick="closePasskeyModal()">Cancel</button>
-          <button class="btn-primary" id="passkey-register-btn" style="flex:1;" onclick="registerPasskey()">Register Passkey</button>
+
+        <!-- Existing passkeys list -->
+        <div id="passkey-list" style="margin-bottom:16px;"></div>
+
+        <!-- Register status -->
+        <div id="passkey-status" class="passkey-status" style="display:none;margin-bottom:12px;"></div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:10px;">
+          <button class="btn-ghost" style="flex:1;" onclick="closePasskeyModal()">Close</button>
+          <button class="btn-primary" id="passkey-register-btn" style="flex:1;" onclick="registerPasskey()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:5px;vertical-align:middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            Add Passkey
+          </button>
         </div>
       </div>
     </div>
@@ -189,9 +199,76 @@
       window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
     }
 
-    // Passkey
-    function openPasskeyModal()  { document.getElementById("passkey-modal").style.display = "block"; }
+    // ── Passkey management ───────────────────────────────────────────────────
+    async function openPasskeyModal() {
+      document.getElementById("passkey-modal").style.display = "block";
+      document.getElementById("passkey-status").style.display = "none";
+      document.getElementById("passkey-register-btn").disabled = false;
+      document.getElementById("passkey-register-btn").innerHTML =
+        '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:5px;vertical-align:middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>Add Passkey';
+      await loadPasskeyList();
+    }
     function closePasskeyModal() { document.getElementById("passkey-modal").style.display = "none"; }
+
+    async function loadPasskeyList() {
+      const listEl = document.getElementById("passkey-list");
+      listEl.innerHTML = '<p style="font-size:13px;color:var(--text-3);">Loading…</p>';
+      const { data, error } = await sb
+        .from("passkey_credentials")
+        .select("credential_id, created_at, transports")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false });
+
+      if (error || !data || data.length === 0) {
+        listEl.innerHTML = '<p style="font-size:13px;color:var(--text-3);margin:0 0 4px;">No passkeys registered yet.</p>';
+        return;
+      }
+
+      const typeLabel = (transports) => {
+        if (!transports || transports.length === 0) return "Passkey";
+        if (transports.includes("internal")) return "Device passkey (Touch ID / Face ID)";
+        if (transports.includes("usb") || transports.includes("nfc")) return "Hardware key";
+        if (transports.includes("hybrid")) return "Phone / QR passkey";
+        return "Passkey";
+      };
+
+      listEl.innerHTML = `
+        <p style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Registered Passkeys</p>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">
+          ${data.map(pk => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:10px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <svg width="16" height="16" fill="none" stroke="#83A8FE" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                <div>
+                  <p style="font-size:13px;font-weight:500;color:var(--text-1);margin:0;">${typeLabel(pk.transports)}</p>
+                  <p style="font-size:11px;color:var(--text-3);margin:0;">Added ${new Date(pk.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+              <button onclick="removePasskey('${pk.credential_id}', this)"
+                style="padding:4px 10px;font-size:11px;font-weight:600;color:#ef4444;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:7px;cursor:pointer;transition:background 0.15s;"
+                onmouseover="this.style.background='rgba(239,68,68,0.15)'" onmouseout="this.style.background='rgba(239,68,68,0.08)'">
+                Remove
+              </button>
+            </div>
+          `).join("")}
+        </div>`;
+    }
+
+    async function removePasskey(credentialId, btn) {
+      if (!confirm("Remove this passkey? You can add a new one at any time.")) return;
+      btn.disabled = true; btn.textContent = "Removing…";
+      const { error } = await sb
+        .from("passkey_credentials")
+        .delete()
+        .eq("credential_id", credentialId)
+        .eq("user_id", session.user.id);
+      if (error) {
+        btn.disabled = false; btn.textContent = "Remove";
+        alert("Failed to remove passkey: " + error.message);
+      } else {
+        await loadPasskeyList();
+      }
+    }
 
     async function registerPasskey() {
       const btn    = document.getElementById("passkey-register-btn");
@@ -238,6 +315,7 @@
         status.style.color = "#34d399";
         status.textContent = "✓ Passkey registered! You can now sign in with your device.";
         btn.textContent = "Done";
+        await loadPasskeyList();
         setTimeout(closePasskeyModal, 2500);
       } catch (err) {
         status.style.color = "#ef4444";
