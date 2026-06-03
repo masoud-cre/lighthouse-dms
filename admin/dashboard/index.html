@@ -182,10 +182,10 @@
 
     function emailLink(slug, short_code, name) {
       const link = shortUrl(short_code, slug);
-      const subject = encodeURIComponent(`Document Access: ${name}`);
+      const subject = encodeURIComponent(`Cresta Document Access: ${name}`);
       const body = encodeURIComponent(
         `Hi,\n\nYou've been given access to the following document:\n\n${name}\n\nAccess it here:\n${link}\n\n`
-        + `You'll need the password to view it — reach out if you haven't received it.\n\nBest,\n${session?.user?.email ?? 'Cresta Team'}`
+        + `You might need the password to view it — reach out if you haven't received it.\n\nBest,\n${session?.user?.email ?? 'Cresta Team'}`
       );
       window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
     }
