@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="../../theme.css" />
   <script src="../../theme.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@10/dist/bundle/index.umd.min.js"></script>
   <style>
     .header-inner { max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between; }
     main { max-width:1100px;margin:0 auto;padding:36px 24px; }
@@ -53,6 +54,15 @@
       <label class="dms-label">Your Admin Password</label>
       <input type="password" id="gate-pw" class="dms-input" placeholder="••••••••" style="margin-bottom:16px;" />
       <button class="btn-primary" id="gate-btn" style="width:100%;" onclick="verifyAndLoad()">View Logs</button>
+      <div style="display:flex;align-items:center;gap:10px;margin:14px 0;">
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <span style="font-size:12px;color:var(--text-3);">or</span>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+      </div>
+      <button id="passkey-gate-btn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--bg-subtle);color:var(--text-1);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:500;font-family:'Barlow',sans-serif;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='var(--bg-subtle)'" onclick="passkeyGate()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+        Sign in with Passkey
+      </button>
       <p id="gate-error" style="color:#ef4444;font-size:13px;margin-top:10px;display:none;"></p>
     </div>
   </div>
@@ -86,6 +96,28 @@
       session = s;
     }
 
+    async function loadLogs() {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/get-analytics`, {
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      });
+      const { documents } = await res.json();
+      allDocs = documents || [];
+
+      const logResults = await Promise.all(allDocs.map(doc =>
+        fetch(`${SUPABASE_URL}/functions/v1/get-analytics?slug=${doc.slug}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        }).then(r => r.json()).then(d => (d.logs || []).map(l => ({ ...l, doc_name: doc.name, doc_slug: doc.slug })))
+      ));
+      allLogs = logResults.flat().sort((a, b) => new Date(b.accessed_at) - new Date(a.accessed_at));
+
+      const sel = document.getElementById("filter-doc");
+      allDocs.forEach(d => { const o = document.createElement("option"); o.value = d.slug; o.textContent = d.name; sel.appendChild(o); });
+
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("logs-main").style.display = "block";
+      renderTable();
+    }
+
     async function verifyAndLoad() {
       const pw    = document.getElementById("gate-pw").value;
       const btn   = document.getElementById("gate-btn");
@@ -99,29 +131,51 @@
         btn.disabled = false; btn.textContent = "View Logs";
         return;
       }
+      await loadLogs();
+    }
 
-      // Load all docs + logs
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/get-analytics`, {
-        headers: { Authorization: `Bearer ${session.access_token}` }
-      });
-      const { documents } = await res.json();
-      allDocs = documents || [];
+    async function passkeyGate() {
+      const btn   = document.getElementById("passkey-gate-btn");
+      const errEl = document.getElementById("gate-error");
+      errEl.style.display = "none";
+      btn.disabled = true;
+      btn.innerHTML = `<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Verifying…`;
 
-      // Fetch per-doc logs
-      const logResults = await Promise.all(allDocs.map(doc =>
-        fetch(`${SUPABASE_URL}/functions/v1/get-analytics?slug=${doc.slug}`, {
-          headers: { Authorization: `Bearer ${session.access_token}` }
-        }).then(r => r.json()).then(d => (d.logs || []).map(l => ({ ...l, doc_name: doc.name, doc_slug: doc.slug })))
-      ));
-      allLogs = logResults.flat().sort((a, b) => new Date(b.accessed_at) - new Date(a.accessed_at));
+      try {
+        const startRes = await fetch(`${SUPABASE_URL}/functions/v1/passkey-auth-start`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: session.user.email }),
+        });
+        const startData = await startRes.json();
+        if (!startRes.ok) throw new Error(startData.error);
 
-      // Populate doc filter
-      const sel = document.getElementById("filter-doc");
-      allDocs.forEach(d => { const o = document.createElement("option"); o.value = d.slug; o.textContent = d.name; sel.appendChild(o); });
+        const { user_id, ...options } = startData;
+        const credential = await SimpleWebAuthnBrowser.startAuthentication(options);
 
-      document.getElementById("gate").style.display = "none";
-      document.getElementById("logs-main").style.display = "block";
-      renderTable();
+        const finishRes = await fetch(`${SUPABASE_URL}/functions/v1/passkey-auth-finish`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ credential, user_id }),
+        });
+        const finishData = await finishRes.json();
+        if (!finishRes.ok) throw new Error(finishData.error);
+
+        const { error: verifyError } = await sb.auth.verifyOtp({ token_hash: finishData.token_hash, type: "magiclink" });
+        if (verifyError) throw verifyError;
+
+        const { data: { session: fresh } } = await sb.auth.getSession();
+        session = fresh;
+        await loadLogs();
+      } catch (err) {
+        errEl.textContent =
+          err.message?.includes("NotAllowedError") || err.message?.includes("cancelled") ? "Passkey authentication was cancelled." :
+          err.message?.includes("No passkey") ? "No passkey registered for this account." :
+          err.message || "Passkey sign-in failed.";
+        errEl.style.display = "block";
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg> Sign in with Passkey`;
+      }
     }
 
     function renderTable() {
@@ -161,5 +215,6 @@
     document.getElementById("gate-pw").addEventListener("keydown", e => { if (e.key === "Enter") verifyAndLoad(); });
     init();
   </script>
+  <style>.spin{animation:spin 1s linear infinite}@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}</style>
 </body>
 </html>
